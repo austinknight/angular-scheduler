@@ -5,6 +5,11 @@
 
 @import url("http://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
 
+//== Variables
+$grey: #ccc;
+
+
+
 html {
   // Set base font size so that we can use rem values similar to pixels
   // rem-calc(16) =16px, rem-calc(18) =18px, rem-calc(21) =21px, etc...
@@ -14,4 +19,45 @@ html {
 body {
   font-family: 'Open Sans', sans-serif;
   font-size: rem-calc(16); // =16px
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+.ang-cal-wrap {
+  border: 1px solid $grey;
+  margin: 50px auto;
+  padding: 10px 0;
+  width: 98%;
+}
+
+.ang-cal-header {
+  padding: 10px 2%;
+}
+
+.ang-cal {
+  height: auto;
+  overflow: scroll;
+  padding: 0 2%;
+  width: 96%;
+  
+  .block-wrap {
+    width: 25844px;
+  }
+
+  .block {
+    float: left;
+    margin-right: 4px; 
+    width: 3668px;
+  }
+
+  .time {
+    border: 1px solid $grey;
+    display: inline-block;
+    height: 280px;
+    padding: 10px;
+    width: 127px;
+  }
 }
