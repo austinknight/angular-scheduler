@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+@import "compass/css3";
+@import "../../bower_components/normalize-scss/normalize";
+
+@import url("http://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
+
+html {
+  // Set base font size so that we can use rem values similar to pixels
+  // rem-calc(16) =16px, rem-calc(18) =18px, rem-calc(21) =21px, etc...
+  font-size: 100%;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  font-size: rem-calc(16); // =16px
+}
