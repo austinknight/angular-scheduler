@@ -27,7 +27,8 @@ module.exports = function(grunt) {
         files: [
           {
             src: [
-              'bower_components/angular/angular.min.js'
+              'bower_components/angular/angular.min.js',
+              'bower_components/moment/min/moment.min.js'
             ],
             dest: 'demo/scripts/vendor.js'
           }
