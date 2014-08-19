@@ -9,24 +9,28 @@ Still a work in progress.
 - Moment
 - Moment-range
 
-# Building
+#Usage
 
-Install dependencies
-
-    git must be on your path.  If you can't do 'git' from your terminal, then install git first and make sure you have access from the path.
-    Bower installs are dependent on git.
-
-    If you are a git noob, the easiest way to install is by installing the github client.
-
-    # If you don't already have the grunt-cli installed:
-    > npm install -g grunt-cli
-    
-    > npm install
-    > grunt install
-
-Default grunt task will build necesary files into src/
-    > grunt
+TBD
 
 # Developing
 
-"grunt watch" task. This will automatically rebuild js, and scss files which are put into /src. It will also watch for changes to html files for demo purposes. If you change Gruntfile.js, restart by using the default grunt task then watch again.
+  Using bower and npm for dependency management.
+    
+    > git clone git@github.com:austinknight/angular-scheduler.git
+    > npm install
+    > grunt install
+
+    Default grunt task will build necesary files into src/
+    > grunt
+    
+    Task to watch js and scss files in /demo that will get built into src. Also watches for changes to html files and reloads the page on save. If you change Gruntfile.js, restart by using the default grunt task then watch again.
+    > grunt watch
+
+##Testing
+
+TBD
+
+##PR's
+
+Always welcome. Make sure there are tests on whatever features are created.

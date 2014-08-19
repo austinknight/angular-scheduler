@@ -29,7 +29,7 @@ function scheduler ($timeout) {
 
 
       var setRange = daysRange.by('days', function(moment) {
-        daysList.push(moment.format("dddd, MMMM Do"));
+        daysList.push(moment.format("ddd, MMMM Do"));
       });
       self.daysList = daysList;
       console.log(daysList);
