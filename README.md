@@ -15,7 +15,7 @@ TBD
 
 # Developing
 
-  Using bower and npm for dependency management.
+  Using bower and npm for dependency management. Run the demo on any local server to use livereload or drop the index.html file into a browser if not.
     
     > git clone git@github.com:austinknight/angular-scheduler.git
     > npm install
