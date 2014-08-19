@@ -28,7 +28,9 @@ module.exports = function(grunt) {
           {
             src: [
               'bower_components/angular/angular.min.js',
-              'bower_components/moment/min/moment.min.js'
+              'bower_components/jquery/dist/jquery.min.js',
+              'bower_components/moment/min/moment.min.js',
+              'bower_components/moment-range/lib/moment-range.js'
             ],
             dest: 'demo/scripts/vendor.js'
           }
@@ -90,8 +92,11 @@ module.exports = function(grunt) {
     },
     watch: {
       client: {
-        files: ['demo/scripts/**/*.js'],
-        tasks: ['concat']
+        files: ['demo/scripts/app.js'],
+        tasks: ['concat'],
+        options: {
+          livereload: true
+        }
       },
       compass: {
         files: ['demo/scss/**/**.scss'],

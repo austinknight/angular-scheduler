@@ -29,35 +29,36 @@ ul {
 .ang-sched-wrap {
   border: 1px solid $grey;
   margin: 50px auto;
+  overflow: hidden;
   padding: 10px 0;
   width: 98%;
-}
+    
+  .outter-block-wrap {
+    float: left;
+    overflow: scroll;
+    width: 100%;
+  }
 
-.ang-sched-header {
-  padding: 10px 2%;
-}
-
-.ang-sched {
-  height: auto;
-  overflow: scroll;
-  padding: 0 2%;
-  width: 96%;
-  
   .block-wrap {
-    width: 25844px;
+    
+  }
+
+  .block-heading {
+    margin: 0;
   }
 
   .block {
+    background: $grey;
     float: left;
-    margin-right: 4px; 
-    width: 3668px;
+    height: 200px;
+    width: 350px;
+
+    &:nth-child(even) {
+      background: lighten($grey, 10%);
+    }
   }
 
-  .time {
-    border: 1px solid $grey;
-    display: inline-block;
-    height: 280px;
+  .block-inner-wrap {
     padding: 10px;
-    width: 127px;
   }
 }

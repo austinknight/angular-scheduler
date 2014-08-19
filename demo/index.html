@@ -8,39 +8,15 @@
 </head>
 <body>
   <div scheduler class="ang-sched-wrap">
-    <div class="ang-sched-header">
-      <h1>August 2014</h1>
-    </div>
-    <div class="ang-sched">
-      <div class="block-wrap">
-        <div ng-repeat="day in days" class="block">
-          <h2>{{day}}</h2>
-          <ul class="time-list">
-            <li class="time">12am</li>
-            <li class="time">1am</li>
-            <li class="time">2am</li>
-            <li class="time">3am</li>
-            <li class="time">4am</li>
-            <li class="time">5am</li>
-            <li class="time">6am</li>
-            <li class="time">7am</li>
-            <li class="time">8am</li>
-            <li class="time">9am</li>
-            <li class="time">10am</li>
-            <li class="time">11am</li>
-            <li class="time">12pm</li>
-            <li class="time">1pm</li>
-            <li class="time">2pm</li>
-            <li class="time">3pm</li>
-            <li class="time">4pm</li>
-            <li class="time">5pm</li>
-            <li class="time">6pm</li>
-            <li class="time">7pm</li>
-            <li class="time">8pm</li>
-            <li class="time">9pm</li>
-            <li class="time">10pm</li>
-            <li class="time">11pm</li>
-          </ul>
+    <div class="outter-block-wrap">
+      <div class="ang-sched-days block-wrap">
+        <div ng-repeat="day in daysList" class="block">
+          <div class="block-inner-wrap">
+            <h3 class="block-heading">{{day}}</h3>
+            <section class="block-content">
+              
+            </section>
+          </div>
         </div>
       </div>
     </div>
