@@ -7,12 +7,12 @@
   <script src="scripts/app.js"></script>
 </head>
 <body>
-  <div scheduler class="ang-sched-wrap">
+  <div scheduler class="ang-sched-wrap" when-scrolled="getPastDays()">
     <div class="outter-block-wrap">
       <div class="ang-sched-days block-wrap">
-        <div ng-repeat="day in daysList" class="block">
+        <div ng-repeat="day in daysList" class="block" ng-class="{'current-day': day === now, 'first-block': $first, 'last-block': $last}">
+          <h3 class="block-heading">{{day}}</h3>
           <div class="block-inner-wrap">
-            <h3 class="block-heading">{{day}}</h3>
             <section class="block-content">
               
             </section>

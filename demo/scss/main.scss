@@ -11,14 +11,12 @@ $grey: #ccc;
 
 
 html {
-  // Set base font size so that we can use rem values similar to pixels
-  // rem-calc(16) =16px, rem-calc(18) =18px, rem-calc(21) =21px, etc...
-  font-size: 100%;
+  font-size:62.5%;
 }
 
 body {
   font-family: 'Open Sans', sans-serif;
-  font-size: rem-calc(16); // =16px
+  font-size: 1.6rem; // =16px
 }
 
 ul {
@@ -28,6 +26,7 @@ ul {
 
 .ang-sched-wrap {
   border: 1px solid $grey;
+  height: 130px;
   margin: 50px auto;
   overflow: hidden;
   padding: 10px 0;
@@ -40,25 +39,35 @@ ul {
   }
 
   .block-wrap {
-    
+    float: left;
+    padding: 0 10px;
   }
 
   .block-heading {
+    font-size: 1.4rem;
+    height: 52px;
     margin: 0;
   }
 
   .block {
-    background: $grey;
+    
     float: left;
-    height: 200px;
-    width: 350px;
+    height: 300px;
+    width: 150px;
+    
+    .block-inner-wrap {
+      background: $grey;
+      padding: 10px;
+    }
 
     &:nth-child(even) {
-      background: lighten($grey, 10%);
+      .block-inner-wrap {
+        background: lighten($grey, 10%);
+      }
     }
   }
 
-  .block-inner-wrap {
-    padding: 10px;
+  .block-content {
+    min-height: 50px
   }
 }
