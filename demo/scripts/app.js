@@ -1,4 +1,4 @@
-angular.module('angularScheduler', [])
+angular.module('angularScheduler', ['ngQuickDate'])
   .directive('scheduler', scheduler);
 
 // Scheduler Directive
@@ -18,25 +18,53 @@ function scheduler ($timeout) {
 
 
       daysRange.by('days', function(moment) {
-        daysList.push(moment.format("ddd, MMMM Do"));
+        daysList.push({
+          'id' : moment.toJSON().split('T')[0],
+          'name' : moment.format("ddd, MMMM Do"),
+          'items' : []
+        });
       });
 
       self.getPastDays = function () {
         daysStart = daysStart.subtract(1, 'days');
-        self.daysList.unshift(daysStart.format("ddd, MMMM Do"));
+        self.daysList.unshift({
+          'id' : moment.toJSON().split('T')[0],
+          'name' : daysStart.format("ddd, MMMM Do"),
+          'items' : []
+        });
       }
 
       self.getfutureDays = function () {
         daysEnd = daysEnd.add(1, 'days');
-        self.daysList.push(daysEnd.format("ddd, MMMM Do"));
+        self.daysList.push({
+          'id' : moment.toJSON().split('T')[0],
+          'name' : daysEnd.format("ddd, MMMM Do"),
+          'items' : []
+        });
       }
 
       self.daysList = daysList;
 
       self.now = now.format("ddd, MMMM Do");
 
-      self.loadMore = function() {
-        console.log('test')
+      // Add new items
+      self.addItem = function (itemName, startDate, endDate) {
+        var dayToMatch = moment(startDate).toJSON().split('T')[0];
+
+        var newItem = {
+          'dayMatch' : moment(startDate).toJSON().split('T')[0],
+          'name' : itemName,
+          'startDate' : moment(startDate).format("M/D/YYYY"),
+          'endDate' : moment(endDate).format("M/D/YYYY")
+        }
+
+        dayToPush =  $.grep(daysList, function(e){ return e.id == dayToMatch; });
+        // dayToPush.items.push(item);
+        dayToPush[0].items.push(newItem);
+
+        self.newItem.start = '';
+        self.newItem.end = '';
+        self.newItem.name = '';
       }
     },
     link: function($scope, $elem, $attrs){
@@ -65,14 +93,16 @@ function scheduler ($timeout) {
         var firstBlockPos = $('.first-block')
           , lastBlockPos = $('.last-block');
         
-        var wrapper = angular.element($elem[0].firstElementChild)
-          , raw = $elem[0].firstElementChild;
+        var wrapper = $('.outter-block-wrap')
+          , raw = $('.outter-block-wrap')[0];
+
+          console.log(wrapper)
 
         wrapper.bind('scroll', function() {
           var maxScrollLeft = raw.scrollWidth - 1;
           if (raw.scrollLeft + raw.offsetWidth <= raw.offsetWidth) {
             $scope.$apply($scope.getPastDays);
-            $(wrapper).scrollLeft($('.block:nth-child(2)').position().left - 5);
+            $(wrapper).scrollLeft(1);
             setWrapperWidth();
           } else if (raw.scrollLeft + raw.offsetWidth >= maxScrollLeft) {
             $scope.$apply($scope.getfutureDays);

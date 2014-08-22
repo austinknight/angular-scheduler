@@ -30,7 +30,8 @@ module.exports = function(grunt) {
               'bower_components/angular/angular.min.js',
               'bower_components/jquery/dist/jquery.min.js',
               'bower_components/moment/min/moment.min.js',
-              'bower_components/moment-range/lib/moment-range.js'
+              'bower_components/moment-range/lib/moment-range.js',
+              'bower_components/ngQuickDate/dist/ng-quick-date.min.js'
             ],
             dest: 'demo/scripts/vendor.js'
           }

@@ -26,7 +26,7 @@ ul {
 
 .ang-sched-wrap {
   border: 1px solid $grey;
-  height: 130px;
+  min-height: 362px;
   margin: 50px auto;
   overflow: hidden;
   padding: 10px 0;
@@ -34,7 +34,9 @@ ul {
     
   .outter-block-wrap {
     float: left;
+    height: 372px;
     overflow: scroll;
+    padding-bottom: 40px;
     width: 100%;
   }
 
@@ -52,8 +54,7 @@ ul {
   .block {
     
     float: left;
-    height: 300px;
-    width: 150px;
+    width: 200px;
     
     .block-inner-wrap {
       background: $grey;
@@ -68,6 +69,17 @@ ul {
   }
 
   .block-content {
-    min-height: 50px
+    min-height: 300px;
   }
 }
+
+.new-items {
+  padding: 10px 10px 20px 10px;
+
+  h4{
+    margin: 0;
+  }
+}
+
+// Quick Date Styles
+@import "datepicker";

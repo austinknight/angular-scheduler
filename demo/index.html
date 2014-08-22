@@ -8,13 +8,24 @@
 </head>
 <body>
   <div scheduler class="ang-sched-wrap" when-scrolled="getPastDays()">
+    <form class="new-items">
+      <h4>Add new item:</h4>
+      <input type="text" ng-model="newItem.name" placeholder="Item name">
+      <quick-datepicker placeholder="Select Start" ng-model='newItem.start'></quick-datepicker>
+      <quick-datepicker placeholder="Select End" ng-model='newItem.end'></quick-datepicker>
+      <button ng-click="addItem(newItem.name, newItem.start, newItem.end)">Submit</button>
+    </form>
     <div class="outter-block-wrap">
       <div class="ang-sched-days block-wrap">
-        <div ng-repeat="day in daysList" class="block" ng-class="{'current-day': day === now, 'first-block': $first, 'last-block': $last}">
-          <h3 class="block-heading">{{day}}</h3>
+        <div ng-repeat="day in daysList" class="block" ng-class="{'current-day': day.name === now, 'first-block': $first, 'last-block': $last}">
+          <h3 class="block-heading">{{day.name}}</h3>
+          {{day.id}}
           <div class="block-inner-wrap">
             <section class="block-content">
-              
+              <div ng-repeat="item in day.items" class="block-item" ng-show="day.items.length">
+                <h4>{{item.name}}</h4>
+                {{item.startDate}} &mdash; {{item.endDate}}
+              </div>
             </section>
           </div>
         </div>
