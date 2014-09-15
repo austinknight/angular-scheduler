@@ -32,7 +32,7 @@ function scheduler ($timeout, SchedulerService, $q) {
         , daysEnd = moment().add(14, 'days')
         , daysRange = moment().range(daysStart, daysEnd)
         , daysList = [];
-      console.log(daysRange)
+
       // Get initial date range for days view
       daysRange.by('days', function(moment) {
         daysList.push({
@@ -42,11 +42,52 @@ function scheduler ($timeout, SchedulerService, $q) {
         });
       });
 
-      console.log(daysList)
+      //Fetch the data and create schedule items to push into a new items array
+      // 2 Listings for each item (one for start and one for end)
+      // Bucket items by 
 
-      self.$emit('testing');
+      var getBuckets = SchedulerService.getData('').then(function(data){
+        var scheduleItems = [];
+        var collections = data.data;
+
+        _.each(collections, function(item, index) {
+          // If item does not have a start time, it shouldn't be shown
+          if (item.schedule.start === null) {
+            return;
+          }
+
+          // Duration of item in days
+          var itemDuration = moment(item.schedule.start).diff(item.schedule.end, 'days') * -1;
+          
+          var newItem1 = {
+            'id' : (item.id + '-start'),
+            'name' : item.title,
+            'date' : moment(item.schedule.start).format("M/D/YYYY"),
+            'duration' : itemDuration
+          }
+
+          var newItem2 = {
+            'id' : (item.id + '-end'),
+            'name' : item.title,
+            'date' : moment(item.schedule.end).format("M/D/YYYY"),
+            'duration' : itemDuration
+          }
+
+          scheduleItems.push(newItem1, newItem2);
+        });
+
+        // Sort items from oldest to newest anf bucket by date
+        var itemBuckets = _.chain(scheduleItems)
+          .sortBy('date')
+          .groupBy('date')
+          .toArray()
+          .value();   
+
+        return itemBuckets;
+      });
 
       // Get days in the past
+      // * TODO: Get new day, then check if items in item list match new day and push them in
       self.getPastDays = function () {
         daysStart = moment(daysList[0].id).subtract(1, 'days');
         self.daysList.unshift({
@@ -57,6 +98,7 @@ function scheduler ($timeout, SchedulerService, $q) {
       }
 
       // Get days in the future
+      // * TODO: Get new day, then check if items in item list match new day and push them in
       self.getfutureDays = function () {
         daysEnd = moment(daysList[daysList.length - 1].id).add(1, 'days');
         self.daysList.push({
@@ -65,88 +107,6 @@ function scheduler ($timeout, SchedulerService, $q) {
           'items' : []
         });
       }
-
-      SchedulerService.getData('').then(function(data){
-        var collection = data.data;
-        $.each(collection, function(index, item) {
-          // console.log(item)
-          if (item.schedule.start === null) {
-            return;
-          }
-
-          // The new item's start date we want to match with a nay block
-          var dayToMatch = moment(item.schedule.start).toJSON().split('T')[0];
-
-          // Duration of item in days
-          var itemDuration = moment(item.schedule.start).diff(item.schedule.end, 'days') * -1;
-          
-          var newItem = {
-            'id' : (item.id + dayToMatch),
-            'dayMatch' : moment(item.schedule.start).toJSON().split('T')[0],
-            'name' : item.title,
-            'startDate' : moment(item.schedule.start).format("M/D/YYYY"),
-            'endDate' : moment(item.schedule.end).format("M/D/YYYY"),
-            'duration' : itemDuration
-          }
-
-          // Match new item with a day
-          dayToPush =  $.grep(daysList, function(e){ return e.id == dayToMatch; });
-          
-          //If our day to push hasn't been loaded yet, we need to add the days before or after the day we need
-          if (dayToPush.length < 1 && moment(dayToMatch).isBefore(moment(daysList[0].id))) {
-            //then get the first date in our days list and add the dates until we get to the date we need
-            
-            //take number of days to get the range from current start date to the date we need to get to.
-            //Then push that new range into the daysList
-            
-            var x = moment(daysList[0].id).subtract(1, 'days');
-            var y = moment(dayToMatch);
-            
-            var rangeToAdd = moment().range(y, x);
-
-            var rangeList = [];
-            rangeToAdd.by('days', function(moment) {
-              // console.log(moment.format("ddd, MMMM Do"))
-              rangeList.push({
-                'id' : moment.toJSON().split('T')[0],
-                'name' : moment.format("ddd, MMMM Do"),
-                'items' : []
-              });
-            });
-            rangeList = rangeList.reverse();
-
-            $.each(rangeList, function(index, day) {
-              daysList.unshift(day);
-            });
-            //for each day in the range, add it to the daysList
-            
-
-            
-
-            // daysList.unshift({
-            //   'id' : daysStart.toJSON().split('T')[0],
-            //   'name' : daysStart.format("ddd, MMMM Do"),
-            //   'items' : []
-            // });
-
-          } else if (dayToPush.length < 1 && moment(dayToMatch).isAfter(moment(daysList[daysList.length - 1].id))) {
-            //then get the last date in our days list and add the dates until we get to the date we need
-            console.log('exists in the future')
-
-          }
-          
-          // // Push new item into matched day
-          // dayToPush[0].items.push(newItem);
-
-          // // Resetting form contents
-          // self.newItem.start = '';
-          // self.newItem.end = '';
-          // self.newItem.name = '';
-
-          self.$emit('testing');
-        });
-      });
-
 
       // Add new items
       self.addItem = function (itemName, startDate, endDate) {

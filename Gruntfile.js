@@ -28,6 +28,7 @@ module.exports = function(grunt) {
           {
             src: [
               'bower_components/angular/angular.min.js',
+              'bower_components/underscore/underscore-min.js',
               'bower_components/jquery/dist/jquery.min.js',
               'bower_components/moment/min/moment.min.js',
               'bower_components/moment-range/lib/moment-range.js',
