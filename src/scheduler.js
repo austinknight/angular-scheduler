@@ -2,13 +2,235 @@ angular.module('angularScheduler', ['ngQuickDate'])
   .service('SchedulerService', SchedulerService)
   .directive('scheduler', scheduler);
 
-function SchedulerService ($http) {
+function SchedulerService ($http, $q) {
   var apiKey = '';
 
   $http.defaults.headers.common.Authorization = 'Basic ' + btoa(apiKey);
 
-  function getData (url) {
-    return $http.get(url);
+  function getData () {
+    var deferred = $q.defer();
+    //Dummy Data
+    var data = {
+      data: [
+       {
+          "id":"Zkfh4kYjb",
+          "description":"Creative Content - general text/markdown/html/whatever",
+          "featured":false,
+          "schedule":{
+             "start":null,
+             "end":null
+          },
+          "sites":[
+             "steepandcheap"
+          ],
+          "title":"Cool stuff",
+          "slug":"cool-stuff"
+       },
+       {
+          "id":"7351",
+          "title":"Women's Apparel Sale",
+          "slug":"womens-apparel-sale",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7351.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7351.jpg"
+             }
+          },
+          "description":"Women's clothing on sale. This is your opportunity to look good without going broke.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-18T05:56:13.927Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7333",
+          "title":"Men's Apparel Sale",
+          "slug":"mens-apparel-sale",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7333.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7333.jpg"
+             }
+          },
+          "description":"Men's clothing on sale. This is your opportunity to look good without going broke.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-18T06:02:10.927Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7339",
+          "title":"Beanies &amp; Goggles",
+          "slug":"beanies-and-goggles",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7339.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7339.jpg"
+             }
+          },
+          "description":"It's in this collection if it goes on your head.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-19T06:01:11.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7337",
+          "title":"Men's Jackets",
+          "slug":"mens-jackets",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7337.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7337.jpg"
+             }
+          },
+          "description":"Zip up, button up, and stay warm and dry. Grab a jacket for any season.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-19T06:08:36.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7375",
+          "title":"Men's New Arrivals",
+          "slug":"mens-new-arrivals",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7375.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7375.jpg"
+             }
+          },
+          "description":"Fresh finds are lined up and ready for you. Get the good stuff and get if first with this\r\ncollection of brand new apparel for guys.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-20T05:54:47.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7371",
+          "title":"Accessories Sale",
+          "slug":"accessories-sale",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7371.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7371.jpg"
+             }
+          },
+          "description":"Everything in this collection is about the details because details matter.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-20T05:57:23.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7377",
+          "title":"Buyers' Picks For August",
+          "slug":"buyers-picks-for-august",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7377.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7377.jpg"
+             }
+          },
+          "description":"Our buyers dug deep into their list of favorites to create this collection.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-15T00:00:00.000Z",
+             "end":"2014-09-16T06:07:14.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7373",
+          "title":"Stoic",
+          "slug":"stoic",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7373.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7373.jpg"
+             }
+          },
+          "description":"Thrive in your element with clothing, camping gear, and outerwear from Stoic.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-19T06:09:41.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7381",
+          "title":"Active Women",
+          "slug":"active-women",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7381.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7381.jpg"
+             }
+          },
+          "description":"If you feel good when you work out, youll and push yourself harder. Maybe it's the way quality activewear keeps you comfortable despite the sweat, or maybe it's just the instant confidence boost you get when you slide into a new gym outfit.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-16T00:00:00.000Z",
+             "end":"2014-09-17T06:11:44.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"7419",
+          "title":"Hoodies!",
+          "slug":"hoodies",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7419.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7419.jpg"
+             }
+          },
+          "description":"The right hoody never goes out of style. Plus, you'll always be warm and comfortable.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-19T06:00:18.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       }
+    ]
+    };
+
+    deferred.resolve(data);
+    return deferred.promise;
   }
 
   return {
@@ -46,7 +268,7 @@ function scheduler ($timeout, SchedulerService, $q) {
       // 2 Listings for each item (one for start and one for end)
       // Bucket items by 
 
-      var getBuckets = SchedulerService.getData('').then(function(data){
+      var getBuckets = SchedulerService.getData().then(function(data){
         var scheduleItems = [];
         var collections = data.data;
 
@@ -62,14 +284,14 @@ function scheduler ($timeout, SchedulerService, $q) {
           var newItem1 = {
             'id' : (item.id + '-start'),
             'name' : item.title,
-            'date' : moment(item.schedule.start).format("M/D/YYYY"),
+            'date' : moment(item.schedule.start).toJSON().split('T')[0],
             'duration' : itemDuration
           }
 
           var newItem2 = {
             'id' : (item.id + '-end'),
             'name' : item.title,
-            'date' : moment(item.schedule.end).format("M/D/YYYY"),
+            'date' : moment(item.schedule.end).toJSON().split('T')[0],
             'duration' : itemDuration
           }
 
@@ -85,6 +307,24 @@ function scheduler ($timeout, SchedulerService, $q) {
 
         return itemBuckets;
       });
+      
+      // Iterate through shown days. For each day, iterate through buckets.
+      // If bucket item's date matches the day then push the bucket's items into the day
+      _.each(daysList, function(day){
+        var currentDate = day.id;
+        // console.log(currentDate)
+        getBuckets.then(function(bucket){
+          _.each(bucket, function(list){
+            _.each(list, function(item){
+              if(item.date == currentDate) {
+                day.items.push(item);
+              }
+            });
+          });
+        });
+      });
+      console.log(daysList)
+      
 
       // Get days in the past
       // * TODO: Get new day, then check if items in item list match new day and push them in
