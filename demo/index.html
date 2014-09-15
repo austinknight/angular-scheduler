@@ -8,6 +8,11 @@
 </head>
 <body>
   <div scheduler class="ang-sched-wrap" when-scrolled="getPastDays()">
+    <div ng-show="errors.length > 0">
+      <div ng-repeat="error in errors">
+        {{error.message}}
+      </div>
+    </div>
     <form class="new-items">
       <h4>Add new item:</h4>
       <input type="text" ng-model="newItem.name" placeholder="Item name">
@@ -22,8 +27,9 @@
           {{day.id}}
           <div class="block-inner-wrap">
             <section class="block-content">
-              <div ng-repeat="item in day.items" class="block-item" ng-show="day.items.length">
-                <h4>{{item.name}}</h4>
+              <div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-show="day.items.length">
+                {{item.id}}
+                <strong>{{item.name}}</strong><br/>
                 {{item.startDate}} &mdash; {{item.endDate}}
               </div>
             </section>

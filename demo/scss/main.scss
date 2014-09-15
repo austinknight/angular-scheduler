@@ -70,6 +70,7 @@ ul {
 
   .block-content {
     min-height: 300px;
+    position: relative;
   }
 }
 
@@ -79,6 +80,13 @@ ul {
   h4{
     margin: 0;
   }
+}
+
+.block-item {
+  background: white;
+  @include border-radius(3px);
+  font-size: 1.2rem;
+  padding: 10px;
 }
 
 // Quick Date Styles
