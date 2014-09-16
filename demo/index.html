@@ -30,7 +30,8 @@
               <div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-show="day.items.length">
                 {{item.id}}
                 <strong>{{item.name}}</strong><br/>
-                {{item.startDate}} &mdash; {{item.endDate}}
+                {{item.start}} &mdash; {{item.end}}</br>
+                <strong>{{item.slot}}</strong>
               </div>
             </section>
           </div>

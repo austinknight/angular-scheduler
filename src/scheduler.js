@@ -160,7 +160,7 @@ function SchedulerService ($http, $q) {
           "featured":false,
           "schedule":{
              "start":"2014-09-15T00:00:00.000Z",
-             "end":"2014-09-16T06:07:14.159Z"
+             "end":"2014-09-17T06:07:14.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -225,6 +225,26 @@ function SchedulerService ($http, $q) {
           "sites":[
              "steepandcheap"
           ]
+       },
+       {
+          "id":"1234",
+          "title":"Underwear!",
+          "slug":"underwear",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7419.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7419.jpg"
+             }
+          },
+          "description":"The right hoody never goes out of style. Plus, you'll always be warm and comfortable.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-13T00:00:00.000Z",
+             "end":"2014-09-20T06:00:18.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
        }
     ]
     };
@@ -282,17 +302,23 @@ function scheduler ($timeout, SchedulerService, $q) {
           var itemDuration = moment(item.schedule.start).diff(item.schedule.end, 'days') * -1;
           
           var newItem1 = {
-            'id' : (item.id + '-start'),
+            'id' : item.id,
             'name' : item.title,
             'date' : moment(item.schedule.start).toJSON().split('T')[0],
-            'duration' : itemDuration
+            'start' : moment(item.schedule.start).toJSON().split('T')[0],
+            'end' : moment(item.schedule.end).toJSON().split('T')[0],
+            'duration' : itemDuration,
+            'type' : 'start'
           }
 
           var newItem2 = {
-            'id' : (item.id + '-end'),
+            'id' : item.id,
             'name' : item.title,
             'date' : moment(item.schedule.end).toJSON().split('T')[0],
-            'duration' : itemDuration
+            'start' : moment(item.schedule.start).toJSON().split('T')[0],
+            'end' : moment(item.schedule.end).toJSON().split('T')[0],
+            'duration' : itemDuration,
+            'type' : 'end'
           }
 
           scheduleItems.push(newItem1, newItem2);
@@ -303,19 +329,40 @@ function scheduler ($timeout, SchedulerService, $q) {
           .sortBy('date')
           .groupBy('date')
           .toArray()
-          .value();   
+          .value(); 
+        console.log(itemBuckets)
+        var schedule = [];
+        var index;
+        _.each(itemBuckets, function(items){
+          var now = (_.last(schedule) || []).slice(0);
 
-        return itemBuckets;
+          _.each(items, function(item){
+            if (item.type == 'start') {
+              index = _.indexOf(null) === -1 ? now.length : _.indexOf(null);
+              now[index] = item;
+            } else {
+              index = _.indexOf(now, item);
+              now[index] = null;
+            }
+          });
+          schedule.push(now);
+        });
+
+        console.log(schedule)
+        return schedule;
       });
       
       // Iterate through shown days. For each day, iterate through buckets.
       // If bucket item's date matches the day then push the bucket's items into the day
       _.each(daysList, function(day){
         var currentDate = day.id;
+        
         // console.log(currentDate)
-        getBuckets.then(function(bucket){
-          _.each(bucket, function(list){
-            _.each(list, function(item){
+        getBuckets.then(function(schedule){
+
+          _.each(schedule, function(bucket){
+            
+            _.each(bucket, function(item){
               if(item.date == currentDate) {
                 day.items.push(item);
               }
@@ -323,7 +370,10 @@ function scheduler ($timeout, SchedulerService, $q) {
           });
         });
       });
-      console.log(daysList)
+
+
+
+
       
 
       // Get days in the past
