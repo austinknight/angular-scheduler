@@ -330,51 +330,60 @@ function scheduler ($timeout, SchedulerService, $q) {
           .groupBy('date')
           .toArray()
           .value(); 
-        console.log(itemBuckets)
+        
         var schedule = [];
         var index;
+
         _.each(itemBuckets, function(items){
+          var bucketDate = items[0].date;
           var now = (_.last(schedule) || []).slice(0);
 
           _.each(items, function(item){
             if (item.type == 'start') {
               index = _.indexOf(null) === -1 ? now.length : _.indexOf(null);
+              
               now[index] = item;
             } else {
               index = _.indexOf(now, item);
-              now[index] = null;
+
+              if (index !== -1) {
+                now[index] = item;
+              }
             }
           });
+
+          now.date = bucketDate;
+
           schedule.push(now);
         });
 
-        console.log(schedule)
         return schedule;
       });
-      
+
       // Iterate through shown days. For each day, iterate through buckets.
       // If bucket item's date matches the day then push the bucket's items into the day
-      _.each(daysList, function(day){
+      _.each(daysList, function(day, index){
         var currentDate = day.id;
-        
-        // console.log(currentDate)
         getBuckets.then(function(schedule){
-
           _.each(schedule, function(bucket){
-            
-            _.each(bucket, function(item){
-              if(item.date == currentDate) {
-                day.items.push(item);
-              }
-            });
+            if (bucket.date == currentDate) {
+              _.each(bucket, function(item){
+                /* 
+                  If our item's end date is on or before the bucket date then we want to push it
+                  to the day. Otherwise we just delete the data and keep a placeholder for 
+                  preserving the spot
+                */
+                if (bucket.date <= item.end) {
+                  day.items.push(item);  
+                } else {
+                  item = {};
+                  day.items.push(item);  
+                }
+              })
+            }
           });
         });
       });
-
-
-
-
-      
 
       // Get days in the past
       // * TODO: Get new day, then check if items in item list match new day and push them in

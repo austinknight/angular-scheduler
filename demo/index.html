@@ -8,6 +8,7 @@
 </head>
 <body>
   <div scheduler class="ang-sched-wrap" when-scrolled="getPastDays()">
+    
     <div ng-show="errors.length > 0">
       <div ng-repeat="error in errors">
         {{error.message}}
@@ -27,7 +28,7 @@
           {{day.id}}
           <div class="block-inner-wrap">
             <section class="block-content">
-              <div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-show="day.items.length">
+              <div ng-repeat="item in day.items track by $index" class="block-item {{item.id}}" ng-show="day.items.length">
                 {{item.id}}
                 <strong>{{item.name}}</strong><br/>
                 {{item.start}} &mdash; {{item.end}}</br>
