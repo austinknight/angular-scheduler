@@ -368,17 +368,9 @@ function scheduler ($timeout, SchedulerService, $q) {
           _.each(schedule, function(bucket){
             if (bucket.date == currentDate) {
               _.each(bucket, function(item){
-                /* 
-                  If our item's end date is on or before the bucket date then we want to push it
-                  to the day. Otherwise we just delete the data and keep a placeholder for 
-                  preserving the spot
-                */
-                if (bucket.date <= item.end) {
-                  day.items.push(item);  
-                } else {
-                  item = {};
-                  day.items.push(item);  
-                }
+                
+                day.items.push(item);  
+                
               })
             }
           });

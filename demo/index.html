@@ -8,7 +8,7 @@
 </head>
 <body>
   <div scheduler class="ang-sched-wrap" when-scrolled="getPastDays()">
-    
+
     <div ng-show="errors.length > 0">
       <div ng-repeat="error in errors">
         {{error.message}}
@@ -32,7 +32,7 @@
                 {{item.id}}
                 <strong>{{item.name}}</strong><br/>
                 {{item.start}} &mdash; {{item.end}}</br>
-                <strong>{{item.slot}}</strong>
+                <strong>{{item.duration}}</strong>
               </div>
             </section>
           </div>

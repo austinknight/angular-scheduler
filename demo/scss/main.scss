@@ -84,6 +84,7 @@ ul {
 
 .block-item {
   background: white;
+  height: 50px;
   @include border-radius(3px);
   font-size: 1.2rem;
   padding: 10px;
