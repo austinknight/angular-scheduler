@@ -39,8 +39,8 @@ function SchedulerService ($http, $q) {
           "description":"Women's clothing on sale. This is your opportunity to look good without going broke.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-18T05:56:13.927Z"
+             "start":"2014-09-20T00:00:00.000Z",
+             "end":"2014-09-24T05:56:13.927Z"
           },
           "sites":[
              "steepandcheap"
@@ -59,8 +59,8 @@ function SchedulerService ($http, $q) {
           "description":"Men's clothing on sale. This is your opportunity to look good without going broke.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-18T06:02:10.927Z"
+             "start":"2014-024-18T00:00:00.000Z",
+             "end":"2014-09-26T06:02:10.927Z"
           },
           "sites":[
              "steepandcheap"
@@ -79,8 +79,8 @@ function SchedulerService ($http, $q) {
           "description":"It's in this collection if it goes on your head.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-19T06:01:11.159Z"
+             "start":"2014-09-26T00:00:00.000Z",
+             "end":"2014-09-28T06:01:11.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -99,8 +99,8 @@ function SchedulerService ($http, $q) {
           "description":"Zip up, button up, and stay warm and dry. Grab a jacket for any season.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-19T06:08:36.159Z"
+             "start":"2014-09-23T00:00:00.000Z",
+             "end":"2014-09-25T06:08:36.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -119,7 +119,7 @@ function SchedulerService ($http, $q) {
           "description":"Fresh finds are lined up and ready for you. Get the good stuff and get if first with this\r\ncollection of brand new apparel for guys.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
+             "start":"2014-09-19T00:00:00.000Z",
              "end":"2014-09-20T05:54:47.159Z"
           },
           "sites":[
@@ -139,28 +139,8 @@ function SchedulerService ($http, $q) {
           "description":"Everything in this collection is about the details because details matter.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-20T05:57:23.159Z"
-          },
-          "sites":[
-             "steepandcheap"
-          ]
-       },
-       {
-          "id":"7377",
-          "title":"Buyers' Picks For August",
-          "slug":"buyers-picks-for-august",
-          "image":{
-             "url":{
-                "square":"http://www.steepandcheap.com/images/collections/small/7377.jpg",
-                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7377.jpg"
-             }
-          },
-          "description":"Our buyers dug deep into their list of favorites to create this collection.",
-          "featured":false,
-          "schedule":{
-             "start":"2014-09-15T00:00:00.000Z",
-             "end":"2014-09-17T06:07:14.159Z"
+             "start":"2014-09-25T00:00:00.000Z",
+             "end":"2014-09-28T05:57:23.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -179,8 +159,8 @@ function SchedulerService ($http, $q) {
           "description":"Thrive in your element with clothing, camping gear, and outerwear from Stoic.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-19T06:09:41.159Z"
+             "start":"2014-09-22T00:00:00.000Z",
+             "end":"2014-09-23T06:09:41.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -199,8 +179,8 @@ function SchedulerService ($http, $q) {
           "description":"If you feel good when you work out, youll and push yourself harder. Maybe it's the way quality activewear keeps you comfortable despite the sweat, or maybe it's just the instant confidence boost you get when you slide into a new gym outfit.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-16T00:00:00.000Z",
-             "end":"2014-09-17T06:11:44.159Z"
+             "start":"2014-09-26T00:00:00.000Z",
+             "end":"2014-09-26T06:11:44.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -219,8 +199,8 @@ function SchedulerService ($http, $q) {
           "description":"The right hoody never goes out of style. Plus, you'll always be warm and comfortable.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-18T00:00:00.000Z",
-             "end":"2014-09-19T06:00:18.159Z"
+             "start":"2014-09-26T00:00:00.000Z",
+             "end":"2014-09-26T06:00:18.159Z"
           },
           "sites":[
              "steepandcheap"
@@ -239,13 +219,33 @@ function SchedulerService ($http, $q) {
           "description":"The right hoody never goes out of style. Plus, you'll always be warm and comfortable.",
           "featured":false,
           "schedule":{
-             "start":"2014-09-13T00:00:00.000Z",
-             "end":"2014-09-20T06:00:18.159Z"
+             "start":"2014-09-23T00:00:00.000Z",
+             "end":"2014-09-28T06:00:18.159Z"
           },
           "sites":[
              "steepandcheap"
           ]
-       }
+       },
+       {
+          "id":"112233",
+          "title":"TESTING",
+          "slug":"testing",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7339.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7339.jpg"
+             }
+          },
+          "description":"It's in this collection if it goes on your head.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-20T00:00:00.000Z",
+             "end":"2014-09-24T06:01:11.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
     ]
     };
 
@@ -340,14 +340,38 @@ function scheduler ($timeout, SchedulerService, $q) {
 
           _.each(items, function(item){
             if (item.type == 'start') {
-              index = _.indexOf(null) === -1 ? now.length : _.indexOf(null);
               
+              _.find(now, function(obj, pos){  
+                
+                if (!obj.id) {
+                  index = pos;
+                  
+                  return true;
+                }
+              });
+
+              
+              if (index === -1 || _.isUndefined(index)) {
+                index = now.length;
+              }
+              console.log(index, item, now.length)
               now[index] = item;
-            } else {
-              index = _.indexOf(now, item);
+
+              index = -1;
+
+            } else { // removal
+              _.find(now, function(obj){
+                if (obj.id === item.id) {
+                  index = _.indexOf(now, obj);
+                  return true;
+                } else { 
+                  index = -1;
+                  return false;
+                }
+              });
 
               if (index !== -1) {
-                now[index] = item;
+                now[index] = {};
               }
             }
           });
@@ -362,6 +386,9 @@ function scheduler ($timeout, SchedulerService, $q) {
 
       // Iterate through shown days. For each day, iterate through buckets.
       // If bucket item's date matches the day then push the bucket's items into the day
+      var firstDay = true;
+      var prevDay;
+
       _.each(daysList, function(day, index){
         var currentDate = day.id;
         getBuckets.then(function(schedule){
@@ -369,11 +396,23 @@ function scheduler ($timeout, SchedulerService, $q) {
             if (bucket.date == currentDate) {
               _.each(bucket, function(item){
                 
-                day.items.push(item);  
-                
-              })
+                day.items.push(item);
+              });
+
+              // prevDay = bucket;
             }
           });
+
+          // if (!day.items.length) {
+          //   if (firstDay) {
+          //     firstDay = false;
+          //   } else {
+          //     _.each(prevDay, function(item){
+          //       day.items.push({});
+          //     });
+          //   }
+          // }
+
         });
       });
 
