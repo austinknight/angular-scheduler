@@ -28,11 +28,8 @@
           {{day.id}}
           <div class="block-inner-wrap">
             <section class="block-content">
-              <div ng-repeat="item in day.items track by $index" class="block-item {{item.id}}" ng-show="day.items.length">
-                {{item.id}}
-                <strong>{{item.name}}</strong><br/>
-                {{item.start}} &mdash; {{item.end}}</br>
-                <strong>{{item.duration}}</strong>
+              <div ng-repeat="item in day.items track by $index" class="block-item {{item.id}}" ng-class="{'span{{item.duration}}' : item.display, 'placeholder' : !item.display}" ng-show="day.items.length">
+                <strong ng-bind-html="item.name"></strong> {{item.duration}}
               </div>
             </section>
           </div>

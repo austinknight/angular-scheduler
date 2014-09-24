@@ -31,6 +31,5 @@
   "scripts": {
     "test": "grunt"
   },
-  "repository": {
-  }
+  "repository": {}
 }

@@ -1,4 +1,4 @@
-angular.module('angularScheduler', ['ngQuickDate'])
+angular.module('angularScheduler', ['ngQuickDate', 'ngSanitize'])
   .service('SchedulerService', SchedulerService)
   .directive('scheduler', scheduler);
 
@@ -246,6 +246,46 @@ function SchedulerService ($http, $q) {
              "steepandcheap"
           ]
        },
+       {
+          "id":"112244",
+          "title":"Fun Clothes",
+          "slug":"fun-clothes",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7339.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7339.jpg"
+             }
+          },
+          "description":"These are clothes for having fun in.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-18T00:00:00.000Z",
+             "end":"2014-09-28T06:01:11.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       },
+       {
+          "id":"112255",
+          "title":"Lame Clothes",
+          "slug":"lame-clothes",
+          "image":{
+             "url":{
+                "square":"http://www.steepandcheap.com/images/collections/small/7339.jpg",
+                "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7339.jpg"
+             }
+          },
+          "description":"These are clothes for being a lame person.",
+          "featured":false,
+          "schedule":{
+             "start":"2014-09-17T00:00:00.000Z",
+             "end":"2014-10-07T06:01:11.159Z"
+          },
+          "sites":[
+             "steepandcheap"
+          ]
+       }
     ]
     };
 
@@ -359,7 +399,7 @@ function scheduler ($timeout, SchedulerService, $q) {
 
               index = -1;
 
-            } else { // removal
+            } else {
               _.find(now, function(obj){
                 if (obj.id === item.id) {
                   index = _.indexOf(now, obj);
@@ -395,24 +435,15 @@ function scheduler ($timeout, SchedulerService, $q) {
           _.each(schedule, function(bucket){
             if (bucket.date == currentDate) {
               _.each(bucket, function(item){
-                
-                day.items.push(item);
+                if (item.start == currentDate) {
+                  item.display = true;
+                  day.items.push(item);
+                } else {
+                  day.items.push({'display': false});
+                }
               });
-
-              // prevDay = bucket;
             }
           });
-
-          // if (!day.items.length) {
-          //   if (firstDay) {
-          //     firstDay = false;
-          //   } else {
-          //     _.each(prevDay, function(item){
-          //       day.items.push({});
-          //     });
-          //   }
-          // }
-
         });
       });
 
@@ -475,14 +506,6 @@ function scheduler ($timeout, SchedulerService, $q) {
           'duration' : itemDuration
         }
 
-        // If the item duration is longer than a day, we need to set the item to span multiple day columns
-        // Emits event with item info for directive to handle DOM manipulation
-        // if (itemDuration > 0) {
-        //   self.$emit('setItemWidth', {
-        //     'itemId' : itemId 
-        //   });
-        // }
-
         // Match new item with a day
         dayToPush =  $.grep(daysList, function(e){ return e.id == dayToMatch; });
         
@@ -520,12 +543,6 @@ function scheduler ($timeout, SchedulerService, $q) {
           deferred.resolve();
           return deferred.promise;
         };
-
-
-
-        // Set scroll position of schedule wrapper to current day on load
-        
-
         
         setWrapperWidth().then(function(){
           var currentDayPos = $('.current-day').position().left;
@@ -551,7 +568,6 @@ function scheduler ($timeout, SchedulerService, $q) {
             setWrapperWidth();
           }
         });
-
         
         $scope.$on('testing', function(){
           setWrapperWidth().then(function(){
