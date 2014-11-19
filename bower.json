@@ -19,14 +19,14 @@
     "package.json"
   ],
   "dependencies": {
-    "angular": "1.2.9",
-    "normalize-css": "~3.0.1",
-    "normalize-scss": "~3.0.1",
+    "angular": ">=1.2.9",
     "moment": "~2.8.1",
     "moment-range": "~1.0.2",
     "jquery": "~2.1.1"
   },
   "devDependencies": {
+    "normalize-css": "~3.0.1",
+    "normalize-scss": "~3.0.1",
     "angular-mocks": "~1.2.22",
     "underscore": "~1.7.0"
   },
