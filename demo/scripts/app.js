@@ -1,4 +1,4 @@
-angular.module('angularScheduler', ['ngQuickDate', 'ngSanitize'])
+angular.module('angularScheduler', ['ngSanitize'])
   .service('SchedulerService', SchedulerService)
   .controller('schedulerCtrl', schedulerCtrl)
   .directive('scheduler', scheduler);

@@ -31,7 +31,7 @@ ul {
   overflow: hidden;
   padding: 10px 0;
   width: 98%;
-    
+
   .outter-block-wrap {
     float: left;
     height: 372px;
@@ -52,10 +52,10 @@ ul {
   }
 
   .block {
-    
+
     float: left;
     width: 250px;
-    
+
     .block-inner-wrap {
       background: $grey;
       padding: 10px;
@@ -105,6 +105,3 @@ $spans: 20;
 .placeholder {
   background: transparent;
 }
-
-// Quick Date Styles
-@import "datepicker";
