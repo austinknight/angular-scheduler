@@ -1,7 +1,7 @@
 angular.module('angularScheduler', ['ngSanitize'])
   .controller('schedulerCtrl', schedulerCtrl)
   .directive('scheduler', scheduler)
-  .controller('dummy', dummy);
+  .controller('dummyData', dummyData);
 
 function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
   $scope.$on('data-received', function(event, testData){
@@ -192,10 +192,9 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
     controllerAs: 'scheduler',
     controller: 'schedulerCtrl',
     link: function($scope, $elem, $attrs){
-      $timeout(function() {
-        var data = JSON.parse($attrs.scheduleData);
-        $rootScope.$broadcast('data-received', data);
-      }, 0);
+      //May want to replace this with $parse
+      var data = JSON.parse($attrs.scheduleData);
+      $rootScope.$broadcast('data-received', data);
 
       $scope.$on('schedule-ready', function(){
         $timeout(function() {
@@ -227,7 +226,7 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
   };
 }
 
-function dummy ($scope) {
+function dummyData ($scope) {
   $scope.stuff = [
     {
       "id": "Zkfh4kYjb",
