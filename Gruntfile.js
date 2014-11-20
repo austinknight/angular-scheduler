@@ -58,7 +58,21 @@ module.exports = function(grunt) {
           expand: true,
           cwd: 'demo/',
           src: ['main.css'],
-          dest: 'src/'
+          dest: 'src/',
+          rename: function(dest, src) {
+            return dest + 'schedule.css';
+          }
+        }]
+      },
+      scss: {
+        files: [{
+          expand: true,
+          cwd: 'demo/scss',
+          src: ['main.scss'],
+          dest: 'src/',
+          rename: function(dest, src) {
+            return dest + '_schedule.scss';
+          }
         }]
       }
     },
