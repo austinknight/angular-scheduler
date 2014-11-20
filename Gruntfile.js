@@ -52,6 +52,16 @@ module.exports = function(grunt) {
         }
       }
     },
+    copy: {
+      css: {
+        files: [{
+          expand: true,
+          cwd: 'demo/',
+          src: ['main.css'],
+          dest: 'src/'
+        }]
+      }
+    },
     jshint: {
       options: {
         'maxlen'        : 100,
@@ -102,7 +112,7 @@ module.exports = function(grunt) {
       },
       compass: {
         files: ['demo/scss/**/**.scss'],
-        tasks: ['compass'],
+        tasks: ['compass', 'copy:css'],
         options: {
           livereload: true
         }
@@ -122,7 +132,8 @@ module.exports = function(grunt) {
     grunt.task.run(
       'jshint',
       'compass',
-      'concat'
+      'concat',
+      'copy'
     );
   });
 };

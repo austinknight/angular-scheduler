@@ -1,12 +1,12 @@
 {
   "name": "angular-schedule",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "A timeline-line scheduling module.",
   "author": "http://github.com/austinknight",
   "license": "MIT",
   "homepage": "http://austinknight.net",
   "main": [
-    "demo/main.css",
+    "src/main.css",
     "src/angular-schedule.js"
   ],
   "ignore": [

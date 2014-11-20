@@ -191,6 +191,30 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
     restrict: 'EA',
     controllerAs: 'scheduler',
     controller: 'schedulerCtrl',
+    template: [
+      '<div class="ang-sched-wrap">',
+        '<div ng-show="errors.length > 0">',
+          '<div ng-repeat="error in errors">',
+            '{{error.message}}',
+          '</div>',
+        '</div>',
+        '<div class="outter-block-wrap">',
+          '<div class="ang-sched-days block-wrap">',
+            '<div ng-repeat="day in daysList" class="block" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
+              '<h3 class="block-heading">{{day.name}}</h3>',
+              '{{day.id}}',
+              '<div class="block-inner-wrap">',
+                '<section class="block-content">',
+                  '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.display, \'placeholder\' : !item.display}" ng-show="day.items.length">',
+                    '<div class="collection-title"><strong ng-bind-html="item.name"></strong></div>',
+                  '</div>',
+                '</section>',
+              '</div>',
+            '</div>',
+          '</div>',
+        '</div>',
+      '</div>'
+    ].join(''),
     link: function($scope, $elem, $attrs){
       //May want to replace this with $parse
       var data = JSON.parse($attrs.scheduleData);
