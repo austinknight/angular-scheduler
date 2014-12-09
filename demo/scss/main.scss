@@ -6,9 +6,7 @@
 @import url("http://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
 
 //== Variables
-$grey: #ccc;
-
-
+$grey: #e7e7e7;
 
 html {
   font-size:62.5%;
@@ -25,17 +23,17 @@ ul {
 }
 
 .ang-sched-wrap {
-  border: 1px solid $grey;
   min-height: 362px;
   margin: 50px auto;
   overflow: hidden;
   padding: 10px 0;
-  width: 98%;
+  width: 952px;
 
   .outter-block-wrap {
     float: left;
     height: 372px;
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
     padding-bottom: 40px;
     width: 100%;
   }
@@ -47,6 +45,7 @@ ul {
 
   .block-heading {
     font-size: 1.4rem;
+    font-weight: normal;
     height: 52px;
     margin: 0;
   }
@@ -54,7 +53,7 @@ ul {
   .block {
 
     float: left;
-    width: 250px;
+    width: 136px;
 
     .block-inner-wrap {
       background: $grey;
@@ -63,7 +62,7 @@ ul {
 
     &:nth-child(even) {
       .block-inner-wrap {
-        background: lighten($grey, 10%);
+        background: lighten($grey, 5%);
       }
     }
   }
@@ -95,7 +94,7 @@ $spans: 20;
 @mixin span-x-list {
   @for $i from 1 through $spans {
     .span#{$i} {
-      width: ($i * 210px) + (($i * 40px) - 40px);
+      width: ($i * 210px) + (($i * 10px) - 10px);
     }
   }
 }
