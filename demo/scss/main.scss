@@ -32,9 +32,28 @@ ul {
   .outter-block-wrap {
     float: left;
     height: 372px;
-    overflow-x: hidden;
-    overflow-y: scroll;
     padding-bottom: 40px;
+    position: relative;
+    width: 100%;
+  }
+
+  .inner-block-wrap {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+
+    align-items: stretch;
+    bottom: 52px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: absolute;
+    top: 52px;
     width: 100%;
   }
 
@@ -44,13 +63,18 @@ ul {
   }
 
   .block-heading {
+    float: left;
     font-size: 1.4rem;
     font-weight: normal;
     height: 52px;
     margin: 0;
+    width: 136px;
   }
 
   .block {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
 
     float: left;
     width: 136px;
@@ -58,6 +82,7 @@ ul {
     .block-inner-wrap {
       background: $grey;
       padding: 10px;
+      width: 100%;
     }
 
     &:nth-child(even) {
@@ -68,7 +93,6 @@ ul {
   }
 
   .block-content {
-    min-height: 300px;
     position: relative;
   }
 }
@@ -94,7 +118,7 @@ $spans: 20;
 @mixin span-x-list {
   @for $i from 1 through $spans {
     .span#{$i} {
-      width: ($i * 210px) + (($i * 10px) - 10px);
+      width: ($i * 232px) + (($i * 10px) - 10px);
     }
   }
 }

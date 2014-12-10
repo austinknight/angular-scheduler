@@ -11,8 +11,8 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
     // Setting up our initial date range values
     var now = moment()
-      , daysStart = moment().subtract(43, 'days')
-      , daysEnd = moment().add(28, 'days')
+      , daysStart = moment(now)
+      , daysEnd = moment().add(6, 'days')
       , daysRange = moment().range(daysStart, daysEnd)
       , daysList = [];
 
@@ -141,11 +141,12 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
             if (bucket.date == currentDate) {
 
               _.each(bucket, function(item, index){
-                // var today = moment(now).toJSON().split('T')[0];
                 var firstDay = daysList[0].id;
                 var lastDay = daysList[daysList.length - 1].id;
-                if (item.start < firstDay && item.end > firstDay) {
+
+                if (item.start <= firstDay && item.end >= firstDay) {
                   item.start = firstDay;
+                  console.log(moment(firstDay).diff(item.end, 'days') * -1)
                   item.duration = moment(firstDay).diff(item.end, 'days') * -1;
                 }
                 /*
@@ -155,7 +156,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                 */
                 if (item.start >= firstDay && item.start <= lastDay && item.end > lastDay) {
                   item.end = lastDay;
-                  item.duration = moment(item.start).diff(item.end, 'days') * -1 + 1;
+                  item.duration = moment(item.start).diff(lastDay, 'days') * -1 + 1;
                 }
 
                 if (item.start == currentDate) {
@@ -202,14 +203,18 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
         '</div>',
         '<div class="outter-block-wrap">',
           '<div class="ang-sched-days block-wrap">',
-            '<div ng-repeat="day in daysList" class="block" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
-              '<h3 class="block-heading">{{day.dayOfWeek}},<br>{{day.monthDay}}</h3>',
-              '<div class="block-inner-wrap">',
-                '<section class="block-content">',
-                  '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.display, \'placeholder\' : !item.display}" ng-show="day.items.length">',
-                    '<div class="collection-title"><strong ng-bind-html="item.name"></strong></div>',
-                  '</div>',
-                '</section>',
+            '<div class="headings-row">',
+              '<h3 ng-repeat="day in daysList" class="block-heading">{{day.dayOfWeek}},<br>{{day.monthDay}}</h3>',
+            '</div>',
+            '<div class="inner-block-wrap">',
+              '<div ng-repeat="day in daysList" class="block" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
+                '<div class="block-inner-wrap">',
+                  '<section class="block-content">',
+                    '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.display, \'placeholder\' : !item.display}" ng-show="day.items.length">',
+                      '<div class="collection-title"><strong ng-bind-html="item.name"></strong></div>',
+                    '</div>',
+                  '</section>',
+                '</div>',
               '</div>',
             '</div>',
           '</div>',
@@ -266,8 +271,8 @@ function dummyData ($scope) {
       "description": "Stock up on our exclusive holiday deals!",
       "featured": false,
       "schedule": {
-        "start": "2014-12-04T00:00:00.000Z",
-        "end": "2014-12-15T07:05:48.676Z"
+        "start": "2014-12-07T00:00:00.000Z",
+        "end": "2014-12-13T07:05:48.676Z"
       },
       "sites": [
         "steepandcheap"
@@ -286,8 +291,8 @@ function dummyData ($scope) {
       "description": "Start the new year off right with a fresh pair of kicks from our collection of shoes, boots, & more.",
       "featured": false,
       "schedule": {
-        "start": "2014-12-04T00:00:00.000Z",
-        "end": "2014-12-07T07:09:11.676Z"
+        "start": "2014-12-09T00:00:00.000Z",
+        "end": "2014-12-11T07:09:11.676Z"
       },
       "sites": [
         "steepandcheap"
@@ -306,8 +311,8 @@ function dummyData ($scope) {
       "description": "Sure, you might want an ice axe for the holidays, but that doesn't mean that Junior should have one. Take the safe route and check out our collection of gifts for the little ones.",
       "featured": false,
       "schedule": {
-        "start": "2014-12-04T00:00:00.000Z",
-        "end": "2014-12-07T07:08:55.676Z"
+        "start": "2014-12-12T00:00:00.000Z",
+        "end": "2014-18-07T07:08:55.676Z"
       },
       "sites": [
         "steepandcheap"
@@ -315,7 +320,7 @@ function dummyData ($scope) {
     },
     {
       "id": "8973",
-      "title": "Save On Icebreaker",
+      "title": "Save On Icebreaker Dood",
       "slug": "save-on-icebreaker",
       "image": {
         "url": {
@@ -326,8 +331,8 @@ function dummyData ($scope) {
       "description": "Get the temperature-regulating power and odor-blocking awesomeness of merino wool. And, thanks to this collection, you can get it for less than you'd pay for most synthetics. ",
       "featured": false,
       "schedule": {
-        "start": "2014-12-04T00:00:00.000Z",
-        "end": "2014-12-07T07:07:08.676Z"
+        "start": "2014-12-10T00:00:00.000Z",
+        "end": "2014-12-15T07:07:08.676Z"
       },
       "sites": [
         "steepandcheap"
@@ -366,8 +371,8 @@ function dummyData ($scope) {
       "description": "Few fibers, synthetic or natural, can come close to matching the wicking & warming power of Merino wool. It can hold a third of its weight in moisture & it's also naturally antimicrobial. ",
       "featured": false,
       "schedule": {
-        "start": "2014-12-04T00:00:00.000Z",
-        "end": "2014-12-07T07:05:23.676Z"
+        "start": "2014-12-09T00:00:00.000Z",
+        "end": "2014-12-11T07:05:23.676Z"
       },
       "sites": [
         "steepandcheap"
