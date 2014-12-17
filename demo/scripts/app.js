@@ -54,8 +54,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
           'date' : moment(calendarItem.schedule.start).toJSON().split('T')[0],
           'start' : moment(calendarItem.schedule.start).toJSON().split('T')[0],
           'end' : moment(calendarItem.schedule.end).toJSON().split('T')[0],
-          'duration' : itemDuration,
-          'type' : 'start'
+          'duration' : itemDuration
         }
 
         schedule.push(scheduleItem);
@@ -139,11 +138,15 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
             // If this is the very first set of items, just list them all in the days we need
             // Don't worry about checking for open spaces yet
             if (j == 0) {
+              // Copy, edit, and place first item
+              var firstItem = JSON.parse(JSON.stringify(item));
+              firstItem['type'] = 'start';
+              days[i].items.push(firstItem);
 
-              for (var k = i; k < item.duration; k++) {
+              // Place rest of items
+              for (var k = i + 1; k < item.duration + 1; k++) {
                 days[k].items.push(item);
               }
-
             } else {
               // If this is not the first set of items...
               // Does our day have any items yet?
@@ -170,7 +173,10 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                   // Yes, the is a spot
                   // Replace the spot with the item
 
-                  day.items[placeholderSpot] = item;
+                  // Copy, edit, and place first item
+                  var firstItem = JSON.parse(JSON.stringify(item));
+                  firstItem['type'] = 'start';
+                  day.items[placeholderSpot] = firstItem;
 
                   // Now populate the item out for however long it should be
                   for (var itemDays = 1; itemDays < item.duration; itemDays++) {
@@ -180,7 +186,10 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                 } else {
                   // No, there is not a placeholder spot...
                   // Push the item into the last spot in the list
-                  day.items.push(item);
+                  // Copy, edit, and place first item
+                  var firstItem = JSON.parse(JSON.stringify(item));
+                  firstItem['type'] = 'start';
+                  day.items.push(firstItem);
 
                   // Now go and add the items for the rest of it's duration...
                   // Since there was no placeholder spot, we should create some placeholders above the item so it's inline...
@@ -198,7 +207,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                       if (listLength == (days[i + dayNum - 1].items.length - 1)) {
                         days[i + dayNum].items.push(item);
                       } else {
-                        console.log(days[i + dayNum - 1])
+
                         var numOfPlaceholders =  listLength - (days[i + dayNum].items.length - 1);
 
                         for (var placeholderDays = 0; placeholderDays < numOfPlaceholders; placeholderDays++) {
@@ -228,14 +237,18 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
               } else {
                 // If there are no items yet, push the items in
-                for (var l = 0; l < item.duration; l++) {
+                // Copy, edit, and place first item
+                var firstItem = JSON.parse(JSON.stringify(item));
+                firstItem['type'] = 'start';
+                days[i].items.push(firstItem);
+
+                for (var l = 1; l < item.duration; l++) {
                   days[i + l].items.push(item);
                 }
               }
             }
           }
         }
-
       }
     }
 
@@ -272,7 +285,7 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
               '{{day.id}}',
               '<div class="block-inner-wrap">',
                 '<section class="block-content">',
-                  '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.display, \'placeholder\' : !item.display}" ng-show="day.items.length">',
+                  '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.type, \'placeholder\' : !item.type}" ng-show="day.items.length">',
                     '<div class="collection-title"><strong ng-bind-html="item.name"></strong></div>',
                   '</div>',
                 '</section>',
