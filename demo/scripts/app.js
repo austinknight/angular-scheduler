@@ -204,7 +204,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                         for (var placeholderDays = 0; placeholderDays < numOfPlaceholders; placeholderDays++) {
                           days[i + dayNum].items.push({
                             name: 'placeholder',
-                            start: days[i + l].id,
+                            start: days[i + placeholderDays].id,
                             placeholder: true
                           });
                         }
@@ -217,7 +217,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                       for (var slotSpot = 0; slotSpot < itemSlot; slotSpot++) {
                         days[i + dayNum].items.push({
                           name: 'placeholder',
-                          start: days[i + l].id,
+                          start: days[i + slotSpot].id,
                           placeholder: true
                         });
                       }
@@ -338,8 +338,8 @@ function dummyData ($scope) {
       "description": "Men's clothing on sales. This is your opportunity to look good without going broke.",
       "featured": true,
       "schedule": {
-        "start": "2014-10-30T00:00:00.000Z",
-        "end": "2014-11-02T05:56:13.927Z"
+        "start": "2014-12-20T00:00:00.000Z",
+        "end": "2014-12-21T05:56:13.927Z"
       },
       "sites": [
         "steepandcheap"
@@ -366,8 +366,8 @@ function dummyData ($scope) {
       "description": "Men's clothing on sale. This is your opportunity to look good without going broke.",
       "featured": false,
       "schedule": {
-        "start": "2014-11-05T00:00:00.000Z",
-        "end": "2014-11-10T06:02:10.927Z"
+        "start": "2014-12-21T00:00:00.000Z",
+        "end": "2014-12-21T06:02:10.927Z"
       },
       "sites": [
         "steepandcheap"
