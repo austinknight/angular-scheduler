@@ -4,17 +4,23 @@ angular.module('angularScheduler', ['ngSanitize'])
   .controller('dummyData', dummyData);
 
 function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
-  $scope.$on('data-received', function(event, scheduleData){
-    var scheduleData = scheduleData;
+  var scheduleData;
+
+  function setUpCalendar(data, startDay) {
+    var scheduleInfo = [];
+    scheduleInfo = data;
+
     var self = $scope;
     self.errors = [];
 
+    var now = moment();
+    var rad = startDay || now;
+
     // Setting up our initial date rang values
-    var now = moment()
-      , daysStart = moment(now)
-      , daysEnd = moment().add(6, 'days')
-      , daysRange = moment().range(daysStart, daysEnd)
-      , daysList = [];
+    var daysStart = rad;
+    var daysEnd = moment(daysStart).add(6, 'days');
+    var daysRange = moment().range(daysStart, daysEnd);
+    var daysList = [];
 
     // Get initial date range for days view
     daysRange.by('days', function(moment) {
@@ -108,10 +114,12 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
         } else if (item.start < rangeStart && item.end >= rangeStart) {
           // If an item starts before the first day but ends after it, crop it to show days left in the available range
           item.start = rangeStart;
+          item.duration = calculateDuration(item.end, item.start);
           trimmedItems.push(item);
         }  else if (item.start <= rangeEnd && item.end > rangeEnd) {
           // If an item starts before the last day but ends after it, crop it to show days left in the available range
           item.end = rangeEnd;
+          item.duration = calculateDuration(item.end, item.start);
           trimmedItems.push(item);
         }
       }
@@ -122,7 +130,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
     // Iterate through shown days. For each day, iterate through buckets.
     // If bucket item's date matches the day then push the bucket's items into the day
     function placeItems(days) {
-      var allScheduleItems = getBuckets(scheduleData);
+      var allScheduleItems = getBuckets(scheduleInfo);
       var scheduleItemsInRange = trimItemsToRange(allScheduleItems, daysList[0].id, daysList[daysList.length - 1].id);
 
       // Loop through the days
@@ -170,7 +178,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                 }
 
                 // Is there a placeholder available in the list?
-                if (hasPlaceholderSpot(day.items)) {
+                if (days[i + itemDays] && hasPlaceholderSpot(day.items)) {
 
                   // Yes, the is a spot
                   // Replace the spot with the item
@@ -199,7 +207,8 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
                   for (var dayNum = 1; dayNum < item.duration; dayNum++) {
                     // Does this day have any items yet?
-                    if (days[i + dayNum].items.length) {
+
+                    if (days[i + dayNum] && days[i + dayNum].items.length) {
                       // Yes, it does...
                       // How long is the list?
                       var listLength = days[i + dayNum].items.length;
@@ -225,14 +234,16 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                     } else {
                       // No, not yet...
                       // So push placeholders until we reach the slot we want
-                      for (var slotSpot = 0; slotSpot < itemSlot; slotSpot++) {
-                        days[i + dayNum].items.push({
-                          name: 'placeholder',
-                          start: days[i + slotSpot].id,
-                          placeholder: true
-                        });
+                      if (days[i + dayNum]) {
+                        for (var slotSpot = 0; slotSpot < itemSlot; slotSpot++) {
+                          days[i + dayNum].items.push({
+                            name: 'placeholder',
+                            start: days[i + slotSpot].id,
+                            placeholder: true
+                          });
+                        }
+                        days[i + dayNum].items.push(item);
                       }
-                      days[i + dayNum].items.push(item);
                     }
                   }
                 }
@@ -264,6 +275,27 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
     $timeout(function() {
       $rootScope.$broadcast('schedule-ready');
     }, 0);
+  }
+
+  $scope.$on('data-received', function(event, schedule){
+    var test = moment();
+    scheduleData = schedule;
+    setUpCalendar(scheduleData, test);
+  });
+
+  $scope.$on('prev-week', function(event, currentFistDay){
+    console.log('prev week');
+
+    var start = moment(currentFistDay).subtract(6, 'days');
+
+    setUpCalendar(scheduleData, start);
+  });
+
+  $scope.$on('next-week', function(currentFistDay){
+    console.log('next week');
+    var start = moment(currentFistDay).add(6, 'days');
+
+    setUpCalendar(scheduleData, start);
   });
 }
 
@@ -275,6 +307,8 @@ function scheduler ($rootScope) {
     controller: 'schedulerCtrl',
     template: [
       '<div class="ang-sched-wrap">',
+        '<div ng-click="prevWeek()">prev</div>',
+        '<div ng-click="nextWeek()">next</div>',
         '<div ng-show="errors.length > 0">',
           '<div ng-repeat="error in errors">',
             '{{error.message}}',
@@ -289,7 +323,7 @@ function scheduler ($rootScope) {
             '</div>',
             '<div class="inner-block-wrap">',
               '<div class="scroll-container">',
-                '<div ng-repeat="day in daysList" class="block" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
+                '<div ng-repeat="day in daysList" class="block" data-date="{{day.id}}" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
                   '<div class="block-inner-wrap">',
                     '<section class="block-content">',
 
@@ -310,6 +344,18 @@ function scheduler ($rootScope) {
       var data = JSON.parse($attrs.scheduleData);
       $rootScope.$broadcast('data-received', data);
 
+      $scope.nextWeek = function() {
+        var firstBlock = $('.block')[0];
+        var currentFistDay = $(firstBlock).data('date');
+        $rootScope.$broadcast('next-week', currentFistDay);
+      }
+
+      $scope.prevWeek = function() {
+        var firstBlock = $('.block')[0];
+        var currentFistDay = $(firstBlock).data('date');
+        $rootScope.$broadcast('prev-week', currentFistDay);
+      }
+
       $scope.$on('schedule-ready', function(){
         function equalHeight(group) {
           tallest = 0;
@@ -319,7 +365,6 @@ function scheduler ($rootScope) {
               tallest = thisHeight;
             }
           });
-          console.log(tallest)
           group.height(tallest);
         }
 
