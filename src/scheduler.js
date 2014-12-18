@@ -164,7 +164,9 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
               // Place rest of items
               for (var k = i + 1; k < item.duration + 1; k++) {
-                days[k].items.push(item);
+                if (days[k]) {
+                  days[k].items.push(item);
+                }
               }
             } else {
               // If this is not the first set of items...
@@ -245,11 +247,13 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                       // So push placeholders until we reach the slot we want
                       if (days[i + dayNum]) {
                         for (var slotSpot = 0; slotSpot < itemSlot; slotSpot++) {
-                          days[i + dayNum].items.push({
-                            name: 'placeholder',
-                            start: days[i + slotSpot].id,
-                            placeholder: true
-                          });
+                          if (days[i + slotSpot]) {
+                            days[i + dayNum].items.push({
+                              name: 'placeholder',
+                              start: days[i + slotSpot].id,
+                              placeholder: true
+                            });
+                          }
                         }
                         days[i + dayNum].items.push(item);
                       }
@@ -265,7 +269,9 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                 days[i].items.push(firstItem);
 
                 for (var l = 1; l < item.duration; l++) {
-                  days[i + l].items.push(item);
+                  if (days[i + l]) {
+                    days[i + l].items.push(item);
+                  }
                 }
               }
             }
