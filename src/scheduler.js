@@ -11,8 +11,8 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
     // Setting up our initial date rang values
     var now = moment()
-      , daysStart = moment().subtract(43, 'days')
-      , daysEnd = moment().add(28, 'days')
+      , daysStart = moment(now)
+      , daysEnd = moment().add(6, 'days')
       , daysRange = moment().range(daysStart, daysEnd)
       , daysList = [];
 
@@ -21,6 +21,8 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
       daysList.push({
         'id' : moment.toJSON().split('T')[0],
         'name' : moment.format("ddd, MMMM Do"),
+        'dayOfWeek' : moment.format("ddd"),
+        'monthDay': moment.format("MMMM Do"),
         'items' : []
       });
     });
@@ -266,7 +268,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 }
 
 // Scheduler Directive
-function scheduler ($timeout, $q, $rootScope, $parse) {
+function scheduler ($timeout, $rootScope) {
   return {
     restrict: 'EA',
     controllerAs: 'scheduler',
@@ -280,15 +282,24 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
         '</div>',
         '<div class="outter-block-wrap">',
           '<div class="ang-sched-days block-wrap">',
-            '<div ng-repeat="day in daysList" class="block" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
-              '<h3 class="block-heading">{{day.name}}</h3>',
-              '{{day.id}}',
-              '<div class="block-inner-wrap">',
-                '<section class="block-content">',
-                  '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.type, \'placeholder\' : !item.type}" ng-show="day.items.length">',
-                    '<div class="collection-title"><strong ng-bind-html="item.name"></strong></div>',
+            '<div class="headings-row">',
+              '<div class="block-heading-wrap" ng-repeat="day in daysList">',
+                '<h3 class="block-heading">{{day.dayOfWeek}},<br>{{day.monthDay}}</h3>',
+              '</div>',
+            '</div>',
+            '<div class="inner-block-wrap">',
+              '<div class="scroll-container">',
+                '<div ng-repeat="day in daysList" class="block" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
+                  '<div class="block-inner-wrap">',
+                    '<section class="block-content">',
+
+                        '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.type, \'placeholder\' : !item.type}" ng-show="day.items.length">',
+                          '<div class="collection-title" ng-bind-html="item.name"></div>',
+                        '</div>',
+
+                    '</section>',
                   '</div>',
-                '</section>',
+                '</div>',
               '</div>',
             '</div>',
           '</div>',
@@ -296,34 +307,12 @@ function scheduler ($timeout, $q, $rootScope, $parse) {
       '</div>'
     ].join(''),
     link: function($scope, $elem, $attrs){
-      //May want to replace this with $parse
       var data = JSON.parse($attrs.scheduleData);
       $rootScope.$broadcast('data-received', data);
 
       $scope.$on('schedule-ready', function(){
         $timeout(function() {
-          // Set the width of the block container to scroll
-          var setWrapperWidth = function() {
-            var deferred = $q.defer();
 
-            var blockWrap = $($elem).find('.block-wrap')
-            , blocks = $($elem).find('.block')
-            , totalBlockWidths = 0;
-
-            $.each(blocks, function(index, value) {
-              totalBlockWidths = totalBlockWidths + $(value).outerWidth();
-            });
-
-            blockWrap.width(totalBlockWidths);
-
-            deferred.resolve();
-            return deferred.promise;
-          };
-
-          setWrapperWidth().then(function(){
-            var currentDayPos = $('.current-day').position().left;
-            $('.outter-block-wrap').scrollLeft(currentDayPos - 20);
-          });
         }, 0);
       });
     }
@@ -829,6 +818,66 @@ function dummyData ($scope) {
     {
       "id": "7985",
       "title": "Men's Bottoms On Sale",
+      "slug": "mens-bottoms-on-sale",
+      "image": {
+        "url": {
+          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
+          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
+        }
+      },
+      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
+      "featured": false,
+      "schedule": {
+        "start": "2014-12-19T00:00:00.000Z",
+        "end": "2014-12-19T05:59:57.306Z"
+      },
+      "sites": [
+        "steepandcheap"
+      ]
+    },
+    {
+      "id": "79856",
+      "title": "Men's Bottoms On Sale Again",
+      "slug": "mens-bottoms-on-sale",
+      "image": {
+        "url": {
+          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
+          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
+        }
+      },
+      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
+      "featured": false,
+      "schedule": {
+        "start": "2014-12-19T00:00:00.000Z",
+        "end": "2014-12-19T05:59:57.306Z"
+      },
+      "sites": [
+        "steepandcheap"
+      ]
+    },
+    {
+      "id": "79857",
+      "title": "Men's Bottoms On Sale Some More",
+      "slug": "mens-bottoms-on-sale",
+      "image": {
+        "url": {
+          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
+          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
+        }
+      },
+      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
+      "featured": false,
+      "schedule": {
+        "start": "2014-12-19T00:00:00.000Z",
+        "end": "2014-12-19T05:59:57.306Z"
+      },
+      "sites": [
+        "steepandcheap"
+      ]
+    },
+    {
+      "id": "79858",
+      "title": "Men's Bottoms On Sale For Another Time!",
       "slug": "mens-bottoms-on-sale",
       "image": {
         "url": {
