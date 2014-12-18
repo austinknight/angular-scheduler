@@ -6,7 +6,7 @@
 @import url("http://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
 
 //== Variables
-$grey: #ccc;
+$grey: #e7e7e7;
 
 
 
@@ -25,51 +25,109 @@ ul {
 }
 
 .ang-sched-wrap {
-  border: 1px solid $grey;
   min-height: 362px;
   margin: 50px auto;
   overflow: hidden;
-  padding: 10px 0;
-  width: 98%;
+  width: 1050px;
+
+  .calendar-controls {
+    float: left;
+    width: 100%;
+
+    .controls-wrap {
+      list-style: none;
+      padding: 0;
+      margin: 0 auto;
+      width: 30%;
+      display: block;
+    }
+
+    .control {
+      float: left;
+      padding: 15px 0;
+      text-align: center;
+      width: 33.333%;
+    }
+
+    .calendar-week {
+      font-weight: bold;
+    }
+
+    .current-link {
+      cursor: pointer;
+      font-size: 12px;
+      text-decoration: underline;
+    }
+
+    .control-prev,
+    .control-next {
+      cursor: pointer;
+    }
+  }
 
   .outter-block-wrap {
     float: left;
     height: 372px;
-    overflow: scroll;
-    padding-bottom: 40px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    position: relative;
     width: 100%;
   }
 
+  .inner-block-wrap {
+    bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 52px;
+  }
+
   .block-wrap {
+    position: absolute;
+    bottom: 0;
     float: left;
-    padding: 0 10px;
+    top: 0;
+    width: 100%;
+  }
+
+  .headings-row {
+    height: 52px;
+    width: 100%;
+  }
+
+  .block-heading-wrap {
+    float: left;
+    width: 150px;
   }
 
   .block-heading {
     font-size: 1.4rem;
+    font-weight: normal;
     height: 52px;
+    padding: 6px 0 0 10px;
     margin: 0;
   }
 
   .block {
-
     float: left;
-    width: 250px;
+    width: 150px;
 
     .block-inner-wrap {
       background: $grey;
       padding: 10px;
+      min-height: 300px;
     }
 
     &:nth-child(even) {
       .block-inner-wrap {
-        background: lighten($grey, 10%);
+        background: lighten($grey, 5%);
       }
     }
   }
 
   .block-content {
-    min-height: 300px;
     position: relative;
   }
 }
@@ -88,6 +146,19 @@ ul {
   font-size: 1.2rem;
   margin-bottom: 10px;
   padding: 10px;
+
+  .collection-title,
+  .collection-length {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  .collection-title {
+    font-weight: bold;
+  }
 }
 
 $spans: 20;
@@ -95,7 +166,7 @@ $spans: 20;
 @mixin span-x-list {
   @for $i from 1 through $spans {
     .span#{$i} {
-      width: ($i * 210px) + (($i * 40px) - 40px);
+      width: ($i * 110px) + (($i * 40px) - 40px);
     }
   }
 }
@@ -104,4 +175,5 @@ $spans: 20;
 
 .placeholder {
   background: transparent;
+  opacity: 0;
 }
