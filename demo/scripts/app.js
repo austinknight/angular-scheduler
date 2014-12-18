@@ -268,7 +268,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 }
 
 // Scheduler Directive
-function scheduler ($timeout, $rootScope) {
+function scheduler ($rootScope) {
   return {
     restrict: 'EA',
     controllerAs: 'scheduler',
@@ -311,9 +311,19 @@ function scheduler ($timeout, $rootScope) {
       $rootScope.$broadcast('data-received', data);
 
       $scope.$on('schedule-ready', function(){
-        $timeout(function() {
+        function equalHeight(group) {
+          tallest = 0;
+          group.each(function() {
+            thisHeight = $(this).height();
+            if(thisHeight > tallest) {
+              tallest = thisHeight;
+            }
+          });
+          console.log(tallest)
+          group.height(tallest);
+        }
 
-        }, 0);
+        equalHeight($('.block-inner-wrap'));
       });
     }
   };
