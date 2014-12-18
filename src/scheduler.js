@@ -101,6 +101,14 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
 
+
+        var displayLength;
+        if (item.start == item.end) {
+          item.displayLength = moment(item.start).format('L');
+        } else {
+          item.displayLength = moment(item.start).format('L') + ' - ' + moment(item.end).format('L');
+        }
+
         // If an item starts and ends within the range, do nothin
         if (item.start >= rangeStart && item.end <= rangeEnd) {
           trimmedItems.push(item);
@@ -140,6 +148,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
         // Loop throught the items list
         for (var j = 0; j < scheduleItemsInRange.length; j ++) {
+          // item.displayLength = item.duration;
           var item = scheduleItemsInRange[j];
           var itemStart = item.start;
           var itemDuration = item.duration;
@@ -280,22 +289,38 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
   $scope.$on('data-received', function(event, schedule){
     var test = moment();
     scheduleData = schedule;
-    setUpCalendar(scheduleData, test);
+    $timeout(function() {
+      setUpCalendar(scheduleData, test);
+    }, 0);
   });
 
-  $scope.$on('prev-week', function(event, currentFistDay){
+  $scope.$on('prev-week', function(event, currentFirstDay){
     console.log('prev week');
 
-    var start = moment(currentFistDay).subtract(6, 'days');
-
-    setUpCalendar(scheduleData, start);
+    var start = moment(currentFirstDay).subtract(6, 'days');
+    $timeout(function() {
+      setUpCalendar(scheduleData, start);
+    }, 0);
   });
 
-  $scope.$on('next-week', function(currentFistDay){
+  $scope.$on('next-week', function(event, currentFirstDay){
     console.log('next week');
-    var start = moment(currentFistDay).add(6, 'days');
 
-    setUpCalendar(scheduleData, start);
+    var start = moment(currentFirstDay).add(6, 'days');
+
+    $timeout(function() {
+      setUpCalendar(scheduleData, start);
+    }, 0);
+  });
+
+  $scope.$on('current-week', function(){
+    console.log('current week');
+
+    var start = moment();
+
+    $timeout(function() {
+      setUpCalendar(scheduleData, start);
+    }, 0);
   });
 }
 
@@ -307,13 +332,6 @@ function scheduler ($rootScope) {
     controller: 'schedulerCtrl',
     template: [
       '<div class="ang-sched-wrap">',
-        '<div ng-click="prevWeek()">prev</div>',
-        '<div ng-click="nextWeek()">next</div>',
-        '<div ng-show="errors.length > 0">',
-          '<div ng-repeat="error in errors">',
-            '{{error.message}}',
-          '</div>',
-        '</div>',
         '<div class="outter-block-wrap">',
           '<div class="ang-sched-days block-wrap">',
             '<div class="headings-row">',
@@ -326,17 +344,23 @@ function scheduler ($rootScope) {
                 '<div ng-repeat="day in daysList" class="block" data-date="{{day.id}}" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
                   '<div class="block-inner-wrap">',
                     '<section class="block-content">',
-
                         '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.type, \'placeholder\' : !item.type}" ng-show="day.items.length">',
                           '<div class="collection-title" ng-bind-html="item.name"></div>',
+                          '<div class="collection-length" ng-bind-html="item.displayLength"></div>',
                         '</div>',
-
                     '</section>',
                   '</div>',
                 '</div>',
               '</div>',
             '</div>',
           '</div>',
+        '</div>',
+        '<div class="calendar-controls">',
+          '<ul class="controls-wrap">',
+            '<li class="control control-prev" ng-click="prevWeek()">&#10094;</li>',
+            '<li class="control"><span class="calendar-week">Week 27</span><br><a class="current-link" ng-click="currentWeek()">Current Week</a></li>',
+            '<li class="control control-next" ng-click="nextWeek()">&#10095;</li>',
+          '</ul>',
         '</div>',
       '</div>'
     ].join(''),
@@ -346,14 +370,18 @@ function scheduler ($rootScope) {
 
       $scope.nextWeek = function() {
         var firstBlock = $('.block')[0];
-        var currentFistDay = $(firstBlock).data('date');
-        $rootScope.$broadcast('next-week', currentFistDay);
+        var currentFirstDay = $(firstBlock).data('date');
+        $rootScope.$broadcast('next-week', currentFirstDay);
       }
 
       $scope.prevWeek = function() {
         var firstBlock = $('.block')[0];
-        var currentFistDay = $(firstBlock).data('date');
-        $rootScope.$broadcast('prev-week', currentFistDay);
+        var currentFirstDay = $(firstBlock).data('date');
+        $rootScope.$broadcast('prev-week', currentFirstDay);
+      }
+
+      $scope.currentWeek = function() {
+        $rootScope.$broadcast('current-week');
       }
 
       $scope.$on('schedule-ready', function(){
