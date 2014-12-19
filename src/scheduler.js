@@ -14,14 +14,13 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
     self.errors = [];
 
     var now = moment();
-    var rad = startDay || now;
+    var rad = startDay || moment().isoWeekday(1);
 
     // Setting up our initial date rang values
     var daysStart = rad;
     var daysEnd = moment(daysStart).add(6, 'days');
     var daysRange = moment().range(daysStart, daysEnd);
     var daysList = [];
-
     // Get initial date range for days view
     daysRange.by('days', function(moment) {
       daysList.push({
@@ -29,6 +28,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
         'name' : moment.format("ddd, MMMM Do"),
         'dayOfWeek' : moment.format("ddd"),
         'monthDay': moment.format("MMMM Do"),
+        'week': moment.isoWeek(),
         'items' : []
       });
     });
@@ -109,13 +109,13 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
           item.displayLength = moment(item.start).format('L') + ' - ' + moment(item.end).format('L');
         }
 
-        // If an item starts and ends within the range, do nothin
+        // If an item starts and ends within the range, do nothing
         if (item.start >= rangeStart && item.end <= rangeEnd) {
           trimmedItems.push(item);
           continue;
         }
 
-        if ((item.start < rangeStart && item.end < rangeEnd) || item.start > rangeEnd) {
+        if ((item.start < rangeStart && item.end < rangeStart) || item.start > rangeEnd) {
           // If an item starts and ends before the first day, don't add it
           // OR if an item starts after the end of our range don't add it
           continue;
@@ -293,29 +293,31 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
   }
 
   $scope.$on('data-received', function(event, schedule){
-    var test = moment();
     scheduleData = schedule;
     $timeout(function() {
-      setUpCalendar(scheduleData, test);
+      setUpCalendar(scheduleData);
     }, 0);
   });
 
-  $scope.$on('prev-week', function(event, currentFirstDay){
+  $scope.$on('prev-week', function(event, changeData){
     console.log('prev week');
 
-    var start = moment(currentFirstDay).subtract(6, 'days');
+    var start = moment(changeData.firstDay).subtract(7, 'days');
+
     $timeout(function() {
       setUpCalendar(scheduleData, start);
+      $scope.weekNumber = changeData.week;
     }, 0);
   });
 
-  $scope.$on('next-week', function(event, currentFirstDay){
+  $scope.$on('next-week', function(event, changeData){
     console.log('next week');
 
-    var start = moment(currentFirstDay).add(6, 'days');
+    var start = moment(changeData.firstDay).add(7, 'days');
 
     $timeout(function() {
       setUpCalendar(scheduleData, start);
+      $scope.weekNumber = changeData.week;
     }, 0);
   });
 
@@ -325,13 +327,14 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
     var start = moment();
 
     $timeout(function() {
+      $scope.weekNumber = moment().isoWeek();
       setUpCalendar(scheduleData, start);
     }, 0);
   });
 }
 
 // Scheduler Directive
-function scheduler ($rootScope) {
+function scheduler ($rootScope, $timeout) {
   return {
     restrict: 'EA',
     controllerAs: 'scheduler',
@@ -347,7 +350,7 @@ function scheduler ($rootScope) {
             '</div>',
             '<div class="inner-block-wrap">',
               '<div class="scroll-container">',
-                '<div ng-repeat="day in daysList" class="block" data-date="{{day.id}}" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
+                '<div ng-repeat="day in daysList" class="block" data-date="{{day.id}}" data-week-number="{{day.week}}" ng-class="{\'current-day\': day.name === now, \'first-block\': $first, \'last-block\': $last}">',
                   '<div class="block-inner-wrap">',
                     '<section class="block-content">',
                         '<div ng-repeat="item in day.items" class="block-item {{item.id}}" ng-class="{\'span{{item.duration}}\' : item.type, \'placeholder\' : !item.type}" ng-show="day.items.length">',
@@ -364,7 +367,7 @@ function scheduler ($rootScope) {
         '<div class="calendar-controls">',
           '<ul class="controls-wrap">',
             '<li class="control control-prev" ng-click="prevWeek()">&#10094;</li>',
-            '<li class="control"><span class="calendar-week">Week 27</span><br><a class="current-link" ng-click="currentWeek()">Current Week</a></li>',
+            '<li class="control"><span class="calendar-week">Week {{weekNumber}}</span><br><a class="current-link" ng-click="currentWeek()">Current Week</a></li>',
             '<li class="control control-next" ng-click="nextWeek()">&#10095;</li>',
           '</ul>',
         '</div>',
@@ -374,16 +377,46 @@ function scheduler ($rootScope) {
       var data = JSON.parse($attrs.scheduleData);
       $rootScope.$broadcast('data-received', data);
 
+      var weekNum = moment().isoWeek();
+
+      $scope.weekNumber = weekNum;
+
       $scope.nextWeek = function() {
         var firstBlock = $('.block')[0];
         var currentFirstDay = $(firstBlock).data('date');
-        $rootScope.$broadcast('next-week', currentFirstDay);
+        var currentWeek = $(firstBlock).data('weekNumber');
+
+        if (currentWeek == 52) {
+          currentWeek = 1;
+        } else {
+          currentWeek++;
+        }
+
+        var changeData = {
+          firstDay : currentFirstDay,
+          week     : currentWeek
+        };
+
+        $rootScope.$broadcast('next-week', changeData);
       }
 
       $scope.prevWeek = function() {
         var firstBlock = $('.block')[0];
         var currentFirstDay = $(firstBlock).data('date');
-        $rootScope.$broadcast('prev-week', currentFirstDay);
+        var currentWeek = $(firstBlock).data('weekNumber');
+
+        if (currentWeek == 1) {
+          currentWeek = 52;
+        } else {
+          currentWeek--;
+        }
+
+        var changeData = {
+          firstDay : currentFirstDay,
+          week     : currentWeek
+        };
+
+        $rootScope.$broadcast('prev-week', changeData);
       }
 
       $scope.currentWeek = function() {
@@ -1006,7 +1039,7 @@ function dummyData ($scope) {
     },
     {
       "id": "7989",
-      "title": "Men's Tops",
+      "title": "Shop Exclusive Holiday Deals",
       "slug": "mens-tops",
       "image": {
         "url": {
@@ -1014,11 +1047,11 @@ function dummyData ($scope) {
           "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7989.jpg"
         }
       },
-      "description": "Tops are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a shirt or top for work or play.",
+      "description": "Shop Exclusive Holiday Deals",
       "featured": false,
       "schedule": {
-        "start": "2014-12-15T00:00:00.000Z",
-        "end": "2014-12-17T06:07:33.306Z"
+        "start": "2014-12-18T00:00:00.000Z",
+        "end": "2015-01-01T06:07:33.306Z"
       },
       "sites": [
         "steepandcheap"
