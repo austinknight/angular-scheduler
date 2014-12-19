@@ -189,7 +189,7 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
                 }
 
                 // Is there a placeholder available in the list?
-                if (days[i + itemDays] && hasPlaceholderSpot(day.items)) {
+                if (hasPlaceholderSpot(day.items)) {
 
                   // Yes, the is a spot
                   // Replace the spot with the item
@@ -201,7 +201,14 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
 
                   // Now populate the item out for however long it should be
                   for (var itemDays = 1; itemDays < item.duration; itemDays++) {
-                    days[i + itemDays].items.push(item);
+                    if (days[i + itemDays].items[placeholderSpot] &&  days[i + itemDays].items[placeholderSpot].placeholder) {
+                      days[i + itemDays].items[placeholderSpot] = {};
+                      days[i + itemDays].items[placeholderSpot] = item;
+                    } else {
+                      days[i + itemDays].items.push(item);
+                    }
+
+
                   }
 
                 } else {
