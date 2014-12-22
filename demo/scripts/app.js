@@ -119,12 +119,19 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
           // If an item starts and ends before the first day, don't add it
           // OR if an item starts after the end of our range don't add it
           continue;
-        } else if (item.start < rangeStart && item.end >= rangeStart) {
+        } else if (item.start < rangeStart && item.end >= rangeStart && item.end <= rangeEnd) {
           // If an item starts before the first day but ends after it, crop it to show days left in the available range
           item.start = rangeStart;
           item.duration = calculateDuration(item.end, item.start);
           trimmedItems.push(item);
-        }  else if (item.start <= rangeEnd && item.end > rangeEnd) {
+        } else if (item.start < rangeStart && item.end > rangeEnd) {
+          item.start = rangeStart;
+          item.end = rangeEnd;
+          item.duration = calculateDuration(item.end, item.start);
+          trimmedItems.push(item);
+
+        } else if (item.start <= rangeEnd && item.end > rangeEnd) {
+
           // If an item starts before the last day but ends after it, crop it to show days left in the available range
           item.end = rangeEnd;
           item.duration = calculateDuration(item.end, item.start);
@@ -141,143 +148,123 @@ function schedulerCtrl ($q, $scope, $rootScope, $timeout) {
       var allScheduleItems = getBuckets(scheduleInfo);
       var scheduleItemsInRange = trimItemsToRange(allScheduleItems, daysList[0].id, daysList[daysList.length - 1].id);
 
-      // Loop through the days
-      for (var i = 0; i < days.length; i++) {
-        var day = days[i];
-        var currentDay = days[i].id;
+      for (var dayIndex = 0; dayIndex < days.length; dayIndex++) {
+        var day = days[dayIndex];
+        var currentDay = days[dayIndex].id;
 
         // Loop throught the items list
-        for (var j = 0; j < scheduleItemsInRange.length; j ++) {
+        for (var itemsIndex = 0; itemsIndex < scheduleItemsInRange.length; itemsIndex++) {
           // item.displayLength = item.duration;
-          var item = scheduleItemsInRange[j];
+          var item = scheduleItemsInRange[itemsIndex];
           var itemStart = item.start;
           var itemDuration = item.duration;
 
           if (item.start == currentDay) {
             // If this is the very first set of items, just list them all in the days we need
             // Don't worry about checking for open spaces yet
-            if (j == 0) {
+            if (itemsIndex == 0) {
               // Copy, edit, and place first item
               var firstItem = JSON.parse(JSON.stringify(item));
               firstItem['type'] = 'start';
-              days[i].items.push(firstItem);
+              days[itemsIndex].items.push(firstItem);
 
               // Place rest of items
-              for (var k = i + 1; k < item.duration + 1; k++) {
-                if (days[k]) {
-                  days[k].items.push(item);
+              for (var nextDaysIndex = dayIndex + 1; nextDaysIndex < item.duration ; nextDaysIndex++) {
+                if (days[nextDaysIndex]) {
+                  days[nextDaysIndex].items.push(item);
                 }
               }
             } else {
               // If this is not the first set of items...
               // Does our day have any items yet?
-              if (day.items.length) {
-                // Yes there are items in the day already...
-                var placeholderSpot;
 
-                function hasPlaceholderSpot (items) {
+              var placeholderSpot;
 
-                  var hasPlaceholderSpot = false;
+              function hasPlaceholderSpot (items) {
+                for (var itemNum = 0; itemNum < items.length; itemNum++) {
 
-                  for (var itemNum = 0; itemNum < items.length; itemNum++) {
-
-                    if ('placeholder' in day.items[itemNum]) {
-                      placeholderSpot = itemNum;
-                      return true;
-                    }
+                  if ('placeholder' in day.items[itemNum]) {
+                    placeholderSpot = itemNum;
+                    return true;
                   }
                 }
+              }
 
-                // Is there a placeholder available in the list?
-                if (hasPlaceholderSpot(day.items)) {
+              function plotItems(slot) {
+                var slot = slot;
 
-                  // Yes, the is a spot
-                  // Replace the spot with the item
+                for (var l = 1; l < item.duration; l++) {
+                    // Check for items in the current day
+                    if(days[dayIndex + l].items.length) {
+                      // The day has some items so we need to match up the plot with the slot
+                      var currentDayLength = days[dayIndex + l].items.length;
 
-                  // Copy, edit, and place first item
-                  var firstItem = JSON.parse(JSON.stringify(item));
-                  firstItem['type'] = 'start';
-                  day.items[placeholderSpot] = firstItem;
-
-                  // Now populate the item out for however long it should be
-                  for (var itemDays = 1; itemDays < item.duration; itemDays++) {
-                    if (days[i + itemDays].items[placeholderSpot] &&  days[i + itemDays].items[placeholderSpot].placeholder) {
-                      days[i + itemDays].items[placeholderSpot] = {};
-                      days[i + itemDays].items[placeholderSpot] = item;
-                    } else {
-                      days[i + itemDays].items.push(item);
-                    }
-
-
-                  }
-
-                } else {
-                  // No, there is not a placeholder spot...
-                  // Push the item into the last spot in the list
-                  // Copy, edit, and place first item
-                  var firstItem = JSON.parse(JSON.stringify(item));
-                  firstItem['type'] = 'start';
-                  day.items.push(firstItem);
-
-                  // Now go and add the items for the rest of it's duration...
-                  // Since there was no placeholder spot, we should create some placeholders above the item so it's inline...
-                  var itemSlot = day.items.length - 1;
-
-                  for (var dayNum = 1; dayNum < item.duration; dayNum++) {
-                    // Does this day have any items yet?
-
-                    if (days[i + dayNum] && days[i + dayNum].items.length) {
-                      // Yes, it does...
-                      // How long is the list?
-                      var listLength = days[i + dayNum].items.length;
-
-                      // Do we need a placeholder to keep the items inline?
-                      // list length should equal 1 less then the prev day, if it doesn't we need a placeholder
-                      if (listLength == (days[i + dayNum - 1].items.length - 1)) {
-                        days[i + dayNum].items.push(item);
-                      } else {
-
-                        var numOfPlaceholders =  listLength - (days[i + dayNum].items.length - 1);
-
-                        for (var placeholderDays = 0; placeholderDays < numOfPlaceholders; placeholderDays++) {
-                          days[i + dayNum].items.push({
+                      if (currentDayLength < slot) {
+                        while (currentDayLength < slot) {
+                          days[dayIndex + l].items.push({
                             name: 'placeholder',
-                            start: days[i + placeholderDays].id,
                             placeholder: true
                           });
+                          currentDayLength++;
                         }
-                        days[i + dayNum].items.push(item);
+                        days[dayIndex + l].items.push(item);
+                      } else if (currentDayLength > slot) {
+                        days[dayIndex + l].items[slot] = item;
+                      } else {
+                        // The slot and list length match up so push the item
+                        days[dayIndex + l].items.push(item);
                       }
 
                     } else {
-                      // No, not yet...
-                      // So push placeholders until we reach the slot we want
-                      if (days[i + dayNum]) {
-                        for (var slotSpot = 0; slotSpot < itemSlot; slotSpot++) {
-                          if (days[i + slotSpot]) {
-                            days[i + dayNum].items.push({
-                              name: 'placeholder',
-                              start: days[i + slotSpot].id,
-                              placeholder: true
-                            });
-                          }
+                      // There are no items in the day
+                      if (slot == 0) {
+                        // The slot is the first space so just plot the items out
+                        days[dayIndex + l].items.push(item);
+                      } else {
+                        // Slot is not the first day so we need to push placeholders to match up the plots to the first day
+                        var length = 0;
+                        while (length < slot) {
+                          days[dayIndex + l].items.push({
+                            name: 'placeholder',
+                            placeholder: true
+                          });
+                          length++;
                         }
-                        days[i + dayNum].items.push(item);
+                        days[dayIndex + l].items.push(item);
                       }
                     }
                   }
-                }
+              }
 
+              if (day.items.length) {
+                // Yes there are items in the day already...
+
+                if (hasPlaceholderSpot(day.items)) {
+                  var firstItem = JSON.parse(JSON.stringify(item));
+                  firstItem['type'] = 'start';
+
+                  days[dayIndex].items[placeholderSpot] = firstItem;
+
+                  plotItems(placeholderSpot);
+
+                } else {
+                  // Does not have a placeholder spot, so just push it into the last spot in the list
+                  var firstItem = JSON.parse(JSON.stringify(item));
+                  firstItem['type'] = 'start';
+                  days[dayIndex].items.push(firstItem);
+
+                  plotItems(days[dayIndex].items.length - 1);
+                }
               } else {
                 // If there are no items yet, push the items in
                 // Copy, edit, and place first item
                 var firstItem = JSON.parse(JSON.stringify(item));
                 firstItem['type'] = 'start';
-                days[i].items.push(firstItem);
+                days[dayIndex].items.push(firstItem);
 
                 for (var l = 1; l < item.duration; l++) {
-                  if (days[i + l]) {
-                    days[i + l].items.push(item);
+                  if (days[dayIndex + l]) {
+                    days[dayIndex + l].items.push(item);
                   }
                 }
               }
@@ -450,619 +437,1065 @@ function scheduler ($rootScope, $timeout) {
 
 function dummyData ($scope) {
   $scope.stuff = [
-    {
-      "id": "Zkfh4kYjb",
-      "description": "Creative Content - general text/markdown/html/whatever",
-      "featured": false,
-      "schedule": {
-        "start": null,
-        "end": null
+   {
+      "id":"8515",
+      "title":"Shop Exclusive Holiday Deals",
+      "slug":"shop-exclusive-holiday-deals",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8515.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8515.jpg"
+         }
       },
-      "sites": [
-        "steepandcheap"
-      ],
-      "title": "Cool stuff",
-      "slug": "cool-stuff"
-    },
-    {
-      "id": "7351",
-      "description": "Men's clothing on sales. This is your opportunity to look good without going broke.",
-      "featured": true,
-      "schedule": {
-        "start": "2014-12-20T00:00:00.000Z",
-        "end": "2014-12-21T05:56:13.927Z"
+      "description":"Stock up on our exclusive holiday deals!",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2015-01-01T06:56:49.493Z"
       },
-      "sites": [
-        "steepandcheap"
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8841",
+      "title":"Shop Gifts For Your Girl",
+      "slug":"shop-gifts-for-your-girl",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8841.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8841.jpg"
+         }
+      },
+      "description":"Show her that you care with pieces from our latest collection.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-22T07:10:44.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8843",
+      "title":"Shop Gifts For Your Guy",
+      "slug":"shop-gifts-for-your-guy",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8843.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8843.jpg"
+         }
+      },
+      "description":"Show him that you care with pieces from our latest collection.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-21T07:11:04.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9149",
+      "title":"Stock Up On Ski Gear For Less",
+      "slug":"stock-up-on-ski-gear-for-less",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9149.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9149.jpg"
+         }
+      },
+      "description":"Score new ski gear before the next powder day hits.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-21T07:07:31.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8893",
+      "title":"Footwear For Less - Stride Into Savings",
+      "slug":"footwear-for-less---stride-into-savings",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8893.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8893.jpg"
+         }
+      },
+      "description":"Why spend more than you have to? Our collection of footwear under $50 proves that quality isn't always tied to a hefty price tag.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-20T07:12:22.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8903",
+      "title":"Get Levi's On Sale",
+      "slug":"get-levis-on-sale",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8903.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8903.jpg"
+         }
+      },
+      "description":"Get deals on one of the best names in denim.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-20T07:10:03.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8791",
+      "title":"Score The Perfect Gifts",
+      "slug":"score-the-perfect-gifts",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8791.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8791.jpg"
+         }
+      },
+      "description":"To be honest, not everyone on your list is going to get the royal treatment. For your favorite people, however, we've complied awesome deals on everything from snowboards to skis to kayaks. Show 'em you care.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-20T07:06:20.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9113",
+      "title":"Save On Icebreaker",
+      "slug":"save-on-icebreaker",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9113.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9113.jpg"
+         }
+      },
+      "description":"Get the temperature-regulating power and odor-blocking awesomeness of merino wool. And, thanks to this collection, you can get it for less than you'd pay for most synthetics. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-20T07:04:15.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9137",
+      "title":"Strap Into Snowboard Savings",
+      "slug":"strap-into-snowboard-savings",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9137.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9137.jpg"
+         }
+      },
+      "description":"Score some discounted snowboard gear and surprise your snowboarder with the perfect gift!",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-20T06:56:00.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9117",
+      "title":"Waist Deep Discounts",
+      "slug":"waist-deep-discounts",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9117.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9117.jpg"
+         }
+      },
+      "description":"The days of pow are here, which means that it's time to cover up & prepare. Start saving on outerwear & accessories to get you covered from the waist down.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-19T07:07:40.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9103",
+      "title":"Get Deals On Bags & Packs",
+      "slug":"get-deals-on-bags-and-packs",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9103.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9103.jpg"
+         }
+      },
+      "description":"You have stuff, all kinds of stuff. Bars, water, makeup none of it is going to carry itself. Shop our collection of bags, packs, purses, & more to carry it all in style.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-19T06:59:29.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8775",
+      "title":"Save On Oakley",
+      "slug":"save-on-oakley",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8775.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8775.jpg"
+         }
+      },
+      "description":"Goggles, sunglasses, & outerwear from one of the industry's biggest brands.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-19T06:58:46.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9123",
+      "title":"Find Camp Deals Up To 65% Off",
+      "slug":"find-camp-deals-up-to-65-off",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9123.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9123.jpg"
+         }
+      },
+      "description":"Score amazing deals on camp gear essentials.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-18T00:00:00.000Z",
+         "end":"2014-12-19T06:55:43.493Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9077",
+      "title":"Save Big On Big Brands",
+      "slug":"save-big-on-big-brands",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9077.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9077.jpg"
+         }
+      },
+      "description":"Shop deals from our biggest brands, like Marmot, Mountain Hardwear, & Columbia.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T07:07:32.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9081",
+      "title":"Men's Size Medium",
+      "slug":"mens-size-medium",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9081.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9081.jpg"
+         }
+      },
+      "description":"Shop the latest in men's apparel, all in your size.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T07:05:11.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9083",
+      "title":"Men's Size Large",
+      "slug":"mens-size-large",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9083.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9083.jpg"
+         }
+      },
+      "description":"Shop the latest in men's apparel, all in your size.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T07:03:38.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9107",
+      "title":"Score Sunglasses, Headphones, & More",
+      "slug":"score-sunglasses-headphones-and-more",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9107.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9107.jpg"
+         }
+      },
+      "description":"Get the hottest gifts of the season.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T07:03:21.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8921",
+      "title":"Save On Stoic",
+      "slug":"save-on-stoic",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8921.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8921.jpg"
+         }
+      },
+      "description":"Stoic helps you thrive in your element. This is high-performance outerwear, camping gear, and clothing for men and women.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T07:01:31.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9079",
+      "title":"Men's Size Small",
+      "slug":"mens-size-small",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9079.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9079.jpg"
+         }
+      },
+      "description":"Shop the latest in men's apparel, all in your size.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T06:58:55.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8695",
+      "title":"Merino Wool - Save on Warmth ",
+      "slug":"merino-wool---save-on-warmth",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8695.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8695.jpg"
+         }
+      },
+      "description":"Few fibers, synthetic or natural, can come close to matching the wicking & warming power of Merino wool. It can hold a third of its weight in moisture & it's also naturally antimicrobial. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-17T00:00:00.000Z",
+         "end":"2014-12-18T06:54:12.945Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9075",
+      "title":"Give the Gift of Gear",
+      "slug":"give-the-gift-of-gear",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9075.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9075.jpg"
+         }
+      },
+      "description":"This year, give the gift of gear, and in the process, score some serious brownie points. Our latest collection makes it easy, dishing up our favorite skis, snowboards, kayaks, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-16T00:00:00.000Z",
+         "end":"2014-12-17T07:13:20.282Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9091",
+      "title":"Holiday Gifts Under $50",
+      "slug":"holiday-gifts-under-50",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9091.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9091.jpg"
+         }
+      },
+      "description":"Get the perfect gift at the perfect price with our collection of awesome gift ideas for under $50.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-16T00:00:00.000Z",
+         "end":"2014-12-17T07:06:57.282Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9101",
+      "title":"Get Outfitted For The Ski Season",
+      "slug":"get-outfitted-for-the-ski-season",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9101.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9101.jpg"
+         }
+      },
+      "description":"Save on all of the ski essentials you'll need for the '14/'15 season.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-16T00:00:00.000Z",
+         "end":"2014-12-17T07:03:21.282Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9061",
+      "title":"Holiday Deals Under $100",
+      "slug":"holiday-deals-under-100",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9061.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9061.jpg"
+         }
+      },
+      "description":"It's not too late to score the perfect gift at the perfect price. Shop our collection of some of our favorite gift ideas for under $100.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-15T00:00:00.000Z",
+         "end":"2014-12-16T06:58:42.558Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9097",
+      "title":"Save Big On Fly Fishing & Paddle Gear",
+      "slug":"save-big-on-fly-fishing-and-paddle-gear",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9097.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9097.jpg"
+         }
+      },
+      "description":"Grab some new gear for yourself or give your outdoor enthusiast a new setup for next season.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-15T00:00:00.000Z",
+         "end":"2014-12-16T06:54:45.558Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9053",
+      "title":"Give The Gift Of Skis & Boards",
+      "slug":"give-the-gift-of-skis-and-boards",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9053.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9053.jpg"
+         }
+      },
+      "description":"Yes, the snow is falling, and accordingly, the runs are opening. Start the season off right with our latest collection of skis, snowboards, boots, bindings, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T07:10:34.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9089",
+      "title":"Hardgoods Grab Bag - 50% To 80% Off",
+      "slug":"hardgoods-grab-bag---50-to-80-off",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9089.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9089.jpg"
+         }
+      },
+      "description":"You wish the snow was as deep as these deals.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T07:05:05.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9099",
+      "title":"Give The Gift Of Camp Gear",
+      "slug":"give-the-gift-of-camp-gear",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9099.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9099.jpg"
+         }
+      },
+      "description":"Get deals on camping essentials before the holidays.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T07:04:54.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9035",
+      "title":"Men's and Women's Outerwear",
+      "slug":"mens-and-womens-outerwear",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9035.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9035.jpg"
+         }
+      },
+      "description":"Logic would have it that plummeting mercury mandates increased protection. Get the coverage you need with our collection of Men's & Women's jackets & pants. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T07:01:45.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8749",
+      "title":"Fetch Gifts For Your Dog",
+      "slug":"fetch-gifts-for-your-dog",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8749.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8749.jpg"
+         }
+      },
+      "description":"From packs to beds, find everything your outdoor dog needs to join you on your next adventure.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T07:00:56.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9031",
+      "title":"Score Simms Fishing Gear for the Holidays",
+      "slug":"score-simms-fishing-gear-for-the-holidays",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9031.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9031.jpg"
+         }
+      },
+      "description":"The temps might be dropping, but the fish are certainly still biting. So, to make sure that you don't miss out on your next trophy, get the goods from one of fishing's biggest brands.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T07:00:29.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"7385",
+      "title":"Shop All Things Mountain Bike",
+      "slug":"shop-all-things-mountain-bike",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/7385.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/7385.jpg"
+         }
+      },
+      "description":"The tourists are gone, the snow has yet to fall, and the trails are primed. This is the best time of the year for trail riding, and it's the best time of year for a new steed. Check out our collection of mountain bikes and hit the dirt.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T06:57:25.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9011",
+      "title":"Find Gifts For Your Yogi",
+      "slug":"find-gifts-for-your-yogi",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9011.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9011.jpg"
+         }
+      },
+      "description":"Find the best gifts for the yogi in your life.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-13T00:00:00.000Z",
+         "end":"2014-12-14T06:56:27.793Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9015",
+      "title":"Clothing Accessories Under $25",
+      "slug":"clothing-accessories-under-25",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9015.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9015.jpg"
+         }
+      },
+      "description":"We all know the old adage - something old, something new, and so on. Point being is that the accessories will make or break the look. Get the right ones while spending less by shopping our collection of accessories under $25.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-12T00:00:00.000Z",
+         "end":"2014-12-13T06:58:39.092Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9003",
+      "title":"Give The Gift Of The Outdoors - Find Tents & Sleeping Bags On Sale",
+      "slug":"give-the-gift-of-the-outdoors---find-tents-and-sleeping-bags-on-sale",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9003.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9003.jpg"
+         }
+      },
+      "description":"Nature will always be calling. Heed the sound & return the call with our collection of tents & sleeping bags.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-11T00:00:00.000Z",
+         "end":"2014-12-12T07:10:15.883Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8831",
+      "title":"Clothing & Accessories Sale - Save Big ",
+      "slug":"clothing-and-accessories-sale---save-big",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8831.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8831.jpg"
+         }
+      },
+      "description":"For 48 Hours Only - Bump Anything to 70% off our Clothing and Accessories Collection, Use Code: 9AH-1-6Y8KH",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-11T00:00:00.000Z",
+         "end":"2014-12-12T07:00:29.883Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9017",
+      "title":"Shop Running Essentials",
+      "slug":"shop-running-essentials",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9017.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9017.jpg"
+         }
+      },
+      "description":"Don't wait till the new year to start thinking about running & fitness, start kicking those holiday pounds right now with our collection of running shoes, tights, accessories, & more. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-11T00:00:00.000Z",
+         "end":"2014-12-12T07:00:27.883Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9045",
+      "title":"Get Gifts For Your Surfer",
+      "slug":"get-gifts-for-your-surfer",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9045.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9045.jpg"
+         }
+      },
+      "description":"Find savings on surf gear for your favorite surfer.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-11T00:00:00.000Z",
+         "end":"2014-12-12T06:56:19.883Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9005",
+      "title":"Get Deals On Packs & Accessories",
+      "slug":"get-deals-on-packs-and-accessories",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9005.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9005.jpg"
+         }
+      },
+      "description":"Our camp collection has what it takes to satiate the gear hunger of the summer outdoor obsessive on your list. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T07:08:28.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8891",
+      "title":"Score The Coolest Gifts",
+      "slug":"score-the-coolest-gifts",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8891.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8891.jpg"
+         }
+      },
+      "description":"With our collection of skis & snowboards, you can basically win the Holidays and save big at the same time. Win Win.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T07:08:02.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9039",
+      "title":"Deals On Snowboards, Boots, & Bindings ",
+      "slug":"deals-on-snowboards-boots-and-bindings",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9039.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9039.jpg"
+         }
+      },
+      "description":"Save big on all things snowboarding - boots, boards, & bindings - You'll find everything you need in this collection.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T07:07:58.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9009",
+      "title":"Score New Baselayers",
+      "slug":"score-new-baselayers",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9009.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9009.jpg"
+         }
+      },
+      "description":"Layer, Layer, Layer. Shop our selection of base layers, mid layers, & socks from our top brands.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T07:01:42.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8889",
+      "title":"Get The Hottest Gifts",
+      "slug":"get-the-hottest-gifts",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8889.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8889.jpg"
+         }
+      },
+      "description":"Kayaks, bikes, SUP, camp-our collection has what it takes to satiate the gear hunger of the summer outdoor obsessive on your list. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T07:00:58.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8991",
+      "title":"Get the Best Deals on Fly Fishing Gear",
+      "slug":"get-the-best-deals-on-fly-fishing-gear",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8991.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8991.jpg"
+         }
+      },
+      "description":"The fish are still biting, and they're not going to hook themselves. Get all of the essential gear that you need in our latest collection.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T06:59:01.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8973",
+      "title":"Save On Icebreaker",
+      "slug":"save-on-icebreaker",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8973.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8973.jpg"
+         }
+      },
+      "description":"Get the temperature-regulating power and odor-blocking awesomeness of merino wool. And, thanks to this collection, you can get it for less than you'd pay for most synthetics. ",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T06:56:26.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9043",
+      "title":"Gear Up For Ski Season",
+      "slug":"gear-up-for-ski-season",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9043.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9043.jpg"
+         }
+      },
+      "description":"With our collection of skis, you can basically win the Holidays and save big at the same time. Win Win.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T06:56:01.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9027",
+      "title":"Under $20 Bargain Bin",
+      "slug":"under-20-bargain-bin",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9027.jpeg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9027.jpeg"
+         }
+      },
+      "description":"Everything in this collection is under $20",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T06:54:58.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"9025",
+      "title":"Under $10 Bargain Bin",
+      "slug":"under-10-bargain-bin",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/9025.jpeg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/9025.jpeg"
+         }
+      },
+      "description":"Everything in this collection is under $10.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-10T00:00:00.000Z",
+         "end":"2014-12-11T06:53:24.642Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8987",
+      "title":"Get Winter Accessories For Less",
+      "slug":"get-winter-accessories-for-less",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8987.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8987.jpg"
+         }
+      },
+      "description":"We've assembled all of the essential winter accessories into one collection. Start saving on warming pieces like gloves, beanies, ski socks, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-08T00:00:00.000Z",
+         "end":"2014-12-10T07:11:04.637Z"
+      },
+      "sites":[
+         "steepandcheap"
+      ]
+   },
+   {
+      "id":"8993",
+      "description":"Save big on all things Burton boots, boards, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-08T00:00:00.000Z",
+         "end":"2014-12-10T07:05:03.637Z"
+      },
+      "sites":[
+         "steepandcheap"
       ],
-      "title": "Men's Collection",
-      "slug": "mens-apparel-sale",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7351.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7351.jpg"
-        }
+      "title":"Save On Burton",
+      "slug":"save-on-burton",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8993.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8993.jpg"
+         }
       }
-    },
-    {
-      "id": "7333",
-      "title": "Men's Apparel Sale",
-      "slug": "mens-apparel-sale",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7333.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7333.jpg"
-        }
+   },
+   {
+      "id":"899322",
+      "description":"Save big on all things Burton boots, boards, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-11T00:00:00.000Z",
+         "end":"2014-12-11T07:05:03.637Z"
       },
-      "description": "Men's clothing on sale. This is your opportunity to look good without going broke.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-21T00:00:00.000Z",
-        "end": "2014-12-21T06:02:10.927Z"
+      "sites":[
+         "steepandcheap"
+      ],
+      "title":"TEST TEST",
+      "slug":"save-on-burton",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8993.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8993.jpg"
+         }
+      }
+   },
+   {
+      "id":"899322",
+      "description":"Save big on all things Burton boots, boards, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-12T00:00:00.000Z",
+         "end":"2014-12-18T07:05:03.637Z"
       },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7339",
-      "title": "Beanies & Goggles",
-      "slug": "beanies-and-goggles",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7339.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7339.jpg"
-        }
+      "sites":[
+         "steepandcheap"
+      ],
+      "title":"123456",
+      "slug":"save-on-burton",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8993.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8993.jpg"
+         }
+      }
+   },
+   {
+      "id":"899322",
+      "description":"Save big on all things Burton boots, boards, & more.",
+      "featured":false,
+      "schedule":{
+         "start":"2014-12-14T00:00:00.000Z",
+         "end":"2014-12-15T07:05:03.637Z"
       },
-      "description": "It's in this collection if it goes on your head.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-11-05T00:00:00.000Z",
-        "end": "2014-11-08T06:01:11.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7337",
-      "title": "Men's Jackets",
-      "slug": "mens-jackets",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7337.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7337.jpg"
-        }
-      },
-      "description": "Zip up, button up, and stay warm and dry. Grab a jacket for any season.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-10T00:00:00.000Z",
-        "end": "2014-12-12T06:08:36.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7375",
-      "title": "Men's New Arrivals",
-      "slug": "mens-new-arrivals",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7375.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7375.jpg"
-        }
-      },
-      "description": "Fresh finds are lined up and ready for you. Get the good stuff and get if first with this\r\ncollection of brand new apparel for guys.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-12T00:00:00.000Z",
-        "end": "2014-12-12T05:54:47.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    // {
-    //   "id": "7371",
-    //   "title": "Accessories Sale",
-    //   "slug": "accessories-sale",
-    //   "image": {
-    //     "url": {
-    //       "square": "http://www.steepandcheap.com/images/collections/small/7371.jpg",
-    //       "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7371.jpg"
-    //     }
-    //   },
-    //   "description": "Everything in this collection is about the details because details matter.",
-    //   "featured": false,
-    //   "schedule": {
-    //     "start": "2014-12-15T00:00:00.000Z",
-    //     "end": "2014-12-18T05:57:23.159Z"
-    //   },
-    //   "sites": [
-    //     "steepandcheap"
-    //   ]
-    // },
-    {
-      "id": "7377",
-      "title": "Buyers' Picks For August",
-      "slug": "buyers-picks-for-august",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7377.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7377.jpg"
-        }
-      },
-      "description": "Our buyers dug deep into their list of favorites to create this collection.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-09T00:00:00.000Z",
-        "end": "2014-12-15T06:07:14.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7373",
-      "title": "Stoic",
-      "slug": "stoic",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7373.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7373.jpg"
-        }
-      },
-      "description": "Thrive in your element with clothing, camping gear, and outerwear from Stoic.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-08-13T00:00:00.000Z",
-        "end": "2014-08-16T06:09:41.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7381",
-      "title": "Active Women",
-      "slug": "active-women",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7381.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7381.jpg"
-        }
-      },
-      "description": "If you feel good when you work out, youll and push yourself harder. Maybe it's the way quality activewear keeps you comfortable despite the sweat, or maybe it's just the instant confidence boost you get when you slide into a new gym outfit.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-08-13T00:00:00.000Z",
-        "end": "2014-08-16T06:11:44.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7419",
-      "title": "Hoodies!",
-      "slug": "hoodies",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7419.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7419.jpg"
-        }
-      },
-      "description": "The right hoody never goes out of style. Plus, you'll always be warm and comfortable.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-08-13T00:00:00.000Z",
-        "end": "2014-08-17T06:00:18.159Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7921",
-      "title": "Save On Women's Down & Insulation",
-      "slug": "save-on-womens-down-and-insulation",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7921.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7921.jpg"
-        }
-      },
-      "description": "Down and synthetic insulated jackets are key to staying comfortable through winter. Get something for yourself or snag a present for someone else.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-24T00:00:00.000Z",
-        "end": "2014-09-25T05:55:08.229Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7871",
-      "title": "Get Preseason Deals on Ski Essentials",
-      "slug": "get-preseason-deals-on-ski-essentials",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7871.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7871.jpg"
-        }
-      },
-      "description": "Skiing can be on the expensive side, so it's best to get the deals when they're available. This collection is a mix of discounted skis, boots, helmets, packs and more. Hurry, the pre-season rush is right around the corner.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-24T00:00:00.000Z",
-        "end": "2014-09-25T06:02:27.229Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7919",
-      "title": "Save On Men's Down & Insulation",
-      "slug": "save-on-mens-down-and-insulation",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7919.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7919.jpg"
-        }
-      },
-      "description": "Down and synthetic insulated jackets are key to staying comfortable through winter. Get something for yourself or snag a present for someone else.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-24T00:00:00.000Z",
-        "end": "2014-09-25T06:06:41.229Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7923",
-      "title": "Get Baselayers On Sale Up To 60% Off",
-      "slug": "get-baselayers-on-sale-up-to-60-off",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7923.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7923.jpg"
-        }
-      },
-      "description": "Baselayers offer warmth and comfort through fall and winter. Don't skimp on something so small, get yourself a new synthetic or natural top or bottom and smile while you save.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-26T06:10:24.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7925",
-      "title": "Conquer The Wind & Rain",
-      "slug": "conquer-the-wind-and-rain",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7925.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7925.jpg"
-        }
-      },
-      "description": "Our buyers picked a collection of rain and wind jackets at reasonable prices. A waterproof jacket is a staple for anyone living in the city and anyone who regularly travels in the outdoors.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-26T06:10:25.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7937",
-      "title": "Get Stoic Up To 60% Off",
-      "slug": "get-stoic-up-to-60-off",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7937.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7937.jpg"
-        }
-      },
-      "description": "Stoic helps you thrive in your element. This is high-performance outerwear, camping gear, and clothing for men and women.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-27T05:51:45.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7953",
-      "title": "Save Up To 70% Off Women's Fall Fashions",
-      "slug": "save-up-to-70-off-womens-fall-fashions",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7953.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7953.jpg"
-        }
-      },
-      "description": "The best women's fall fashions in one place and at reasonable prices. You don't have to worry about coupons, exclusions, or fine print, these deals are easy and ripe for the picking.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-27T05:53:24.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7715",
-      "title": "Up to 60% off Road Bike",
-      "slug": "up-to-60-off-road-bike",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7715.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7715.jpg"
-        }
-      },
-      "description": "For the first time ever on Steepandcheap, Pinarello bicycles have made there way into this epic road biking collection. Great deals on bikes, apparel, components and more.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-27T05:58:17.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7935",
-      "title": "Last Chance Summer Savings - Save Up To 75% Off",
-      "slug": "last-chance-summer-savings---save-up-to-75-off",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7935.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7935.jpg"
-        }
-      },
-      "description": "Treat this as your last call to save on swimwear, summer clothes, and summer accessories. You might not see these deals again until spring, so take advantage while you can.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-18T00:00:00.000Z",
-        "end": "2014-12-18T06:11:17.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7939",
-      "title": "Save On Men's Marmot",
-      "slug": "save-on-mens-marmot",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7939.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7939.jpg"
-        }
-      },
-      "description": "Men's apparel from one of the outdoor's best brands.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-18T00:00:00.000Z",
-        "end": "2014-12-20T06:00:17.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7959",
-      "title": "Find Men's Performance Clothes Up To 60% Off",
-      "slug": "find-mens-performance-clothes-up-to-60-off",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7959.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7959.jpg"
-        }
-      },
-      "description": "Snag a performance shirt or a pair of shorts to keep you looking good through the shoulder season. These clothes are perfect for training outside or at the gym.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-28T06:01:03.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7963",
-      "title": "Get Deals On Camp Gear For The Great Outdoors",
-      "slug": "get-deals-on-camp-gear-for-the-great-outdoors",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7963.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7963.jpg"
-        }
-      },
-      "description": "Roughing it doesn't have to mean blowing the bank. Score deep deals on camp gear and accessories so you can enjoy the great outdoors for less.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-09-25T00:00:00.000Z",
-        "end": "2014-09-28T06:04:15.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7961",
-      "title": "Stock Up On Women's Outerwear For Less",
-      "slug": "stock-up-on-womens-outerwear-for-less",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7961.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7961.jpg"
-        }
-      },
-      "description": "Technical outerwear is on sale. Snag jackets and pants for the worse weather.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-20T00:00:00.000Z",
-        "end": "2014-12-23T06:05:59.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7955",
-      "title": "Find Women's Performance Clothes Up To 60% Off",
-      "slug": "find-womens-performance-clothes-up-to-60-off",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7955.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7955.jpg"
-        }
-      },
-      "description": "Snag a performance shirt or a pair of shorts to keep you looking good through the shoulder season. These clothes are perfect for training outside or at the gym.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-19T00:00:00.000Z",
-        "end": "2014-12-19T06:14:41.852Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7985",
-      "title": "Men's Bottoms On Sale",
-      "slug": "mens-bottoms-on-sale",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
-        }
-      },
-      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-19T00:00:00.000Z",
-        "end": "2014-12-19T05:59:57.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "79856",
-      "title": "Men's Bottoms On Sale Again",
-      "slug": "mens-bottoms-on-sale",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
-        }
-      },
-      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-19T00:00:00.000Z",
-        "end": "2014-12-19T05:59:57.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "79857",
-      "title": "Men's Bottoms On Sale Some More",
-      "slug": "mens-bottoms-on-sale",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
-        }
-      },
-      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-19T00:00:00.000Z",
-        "end": "2014-12-19T05:59:57.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "79858",
-      "title": "Men's Bottoms On Sale For Another Time!",
-      "slug": "mens-bottoms-on-sale",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7985.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7985.jpg"
-        }
-      },
-      "description": "Bottoms are easy to come by, but it's not always easy to find them at a great price. Refresh your look by grabbing a pair of pants for work or play.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-19T00:00:00.000Z",
-        "end": "2014-12-19T05:59:57.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7945",
-      "title": "Save Up To 60% Off Beanies & Gloves",
-      "slug": "save-up-to-60-off-beanies-and-gloves",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7945.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7945.jpg"
-        }
-      },
-      "description": "Beanies and gloves are the little things that make all the difference on a chilly fall night or a cold winter morning. These deals make it easy to keep a few extras at the house or in your car or truck so you're always ready and always warm.",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-17T00:00:00.000Z",
-        "end": "2014-12-19T06:05:33.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    },
-    {
-      "id": "7989",
-      "title": "Shop Exclusive Holiday Deals",
-      "slug": "mens-tops",
-      "image": {
-        "url": {
-          "square": "http://www.steepandcheap.com/images/collections/small/7989.jpg",
-          "rectangle": "http://www.steepandcheap.com/images/collections/620x250/7989.jpg"
-        }
-      },
-      "description": "Shop Exclusive Holiday Deals",
-      "featured": false,
-      "schedule": {
-        "start": "2014-12-18T00:00:00.000Z",
-        "end": "2015-01-01T06:07:33.306Z"
-      },
-      "sites": [
-        "steepandcheap"
-      ]
-    }
-  ];
+      "sites":[
+         "steepandcheap"
+      ],
+      "title":"BOOM",
+      "slug":"save-on-burton",
+      "image":{
+         "url":{
+            "square":"http://www.steepandcheap.com/images/collections/small/8993.jpg",
+            "rectangle":"http://www.steepandcheap.com/images/collections/620x250/8993.jpg"
+         }
+      }
+   }
+];
 }
